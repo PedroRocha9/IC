@@ -1,0 +1,5 @@
+/home/pedro/Documents/UA/4o-ano/1o-semestre/IC/Prática/IC/proj1/sndfile-example-src/build/CMakeFiles/wav_cp.dir
+/home/pedro/Documents/UA/4o-ano/1o-semestre/IC/Prática/IC/proj1/sndfile-example-src/build/CMakeFiles/wav_hist.dir
+/home/pedro/Documents/UA/4o-ano/1o-semestre/IC/Prática/IC/proj1/sndfile-example-src/build/CMakeFiles/wav_dct.dir
+/home/pedro/Documents/UA/4o-ano/1o-semestre/IC/Prática/IC/proj1/sndfile-example-src/build/CMakeFiles/edit_cache.dir
+/home/pedro/Documents/UA/4o-ano/1o-semestre/IC/Prática/IC/proj1/sndfile-example-src/build/CMakeFiles/rebuild_cache.dir
