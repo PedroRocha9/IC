@@ -1,1 +1,1 @@
-/usr/bin/c++  -Wall -Wextra -std=c++17 -O3 CMakeFiles/wav_dct.dir/wav_dct.cpp.o -o /home/pedro/Documents/UA/4o-ano/1o-semestre/IC/Prática/IC/proj1/sndfile-example-bin/wav_dct  -lsndfile -lfftw3 
+/usr/bin/c++  -Wall -Wextra -std=c++17 -O3 CMakeFiles/wav_dct.dir/wav_dct.cpp.o -o /home/andre/github/mect_1ano/IC/Prática/sndfile-example-bin/wav_dct  -lsndfile -lfftw3 

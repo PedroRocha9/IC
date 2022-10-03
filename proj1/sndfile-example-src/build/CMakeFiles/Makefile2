@@ -54,10 +54,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/pedro/Documents/UA/4o-ano/1o-semestre/IC/Prática/IC/proj1/sndfile-example-src
+CMAKE_SOURCE_DIR = /home/andre/github/mect_1ano/IC/Prática/sndfile-example-src
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/pedro/Documents/UA/4o-ano/1o-semestre/IC/Prática/IC/proj1/sndfile-example-src/build
+CMAKE_BINARY_DIR = /home/andre/github/mect_1ano/IC/Prática/sndfile-example-src/build
 
 #=============================================================================
 # Directory level rules for the build root directory
@@ -85,14 +85,14 @@ clean: CMakeFiles/wav_dct.dir/clean
 CMakeFiles/wav_cp.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/wav_cp.dir/build.make CMakeFiles/wav_cp.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/wav_cp.dir/build.make CMakeFiles/wav_cp.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/pedro/Documents/UA/4o-ano/1o-semestre/IC/Prática/IC/proj1/sndfile-example-src/build/CMakeFiles --progress-num=1,2 "Built target wav_cp"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/andre/github/mect_1ano/IC/Prática/sndfile-example-src/build/CMakeFiles --progress-num=1,2 "Built target wav_cp"
 .PHONY : CMakeFiles/wav_cp.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/wav_cp.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/pedro/Documents/UA/4o-ano/1o-semestre/IC/Prática/IC/proj1/sndfile-example-src/build/CMakeFiles 2
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/andre/github/mect_1ano/IC/Prática/sndfile-example-src/build/CMakeFiles 2
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/wav_cp.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/pedro/Documents/UA/4o-ano/1o-semestre/IC/Prática/IC/proj1/sndfile-example-src/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/andre/github/mect_1ano/IC/Prática/sndfile-example-src/build/CMakeFiles 0
 .PHONY : CMakeFiles/wav_cp.dir/rule
 
 # Convenience name for target.
@@ -111,14 +111,14 @@ CMakeFiles/wav_cp.dir/clean:
 CMakeFiles/wav_hist.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/wav_hist.dir/build.make CMakeFiles/wav_hist.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/wav_hist.dir/build.make CMakeFiles/wav_hist.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/pedro/Documents/UA/4o-ano/1o-semestre/IC/Prática/IC/proj1/sndfile-example-src/build/CMakeFiles --progress-num=5,6 "Built target wav_hist"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/andre/github/mect_1ano/IC/Prática/sndfile-example-src/build/CMakeFiles --progress-num=5,6 "Built target wav_hist"
 .PHONY : CMakeFiles/wav_hist.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/wav_hist.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/pedro/Documents/UA/4o-ano/1o-semestre/IC/Prática/IC/proj1/sndfile-example-src/build/CMakeFiles 2
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/andre/github/mect_1ano/IC/Prática/sndfile-example-src/build/CMakeFiles 2
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/wav_hist.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/pedro/Documents/UA/4o-ano/1o-semestre/IC/Prática/IC/proj1/sndfile-example-src/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/andre/github/mect_1ano/IC/Prática/sndfile-example-src/build/CMakeFiles 0
 .PHONY : CMakeFiles/wav_hist.dir/rule
 
 # Convenience name for target.
@@ -137,14 +137,14 @@ CMakeFiles/wav_hist.dir/clean:
 CMakeFiles/wav_dct.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/wav_dct.dir/build.make CMakeFiles/wav_dct.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/wav_dct.dir/build.make CMakeFiles/wav_dct.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/pedro/Documents/UA/4o-ano/1o-semestre/IC/Prática/IC/proj1/sndfile-example-src/build/CMakeFiles --progress-num=3,4 "Built target wav_dct"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/andre/github/mect_1ano/IC/Prática/sndfile-example-src/build/CMakeFiles --progress-num=3,4 "Built target wav_dct"
 .PHONY : CMakeFiles/wav_dct.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/wav_dct.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/pedro/Documents/UA/4o-ano/1o-semestre/IC/Prática/IC/proj1/sndfile-example-src/build/CMakeFiles 2
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/andre/github/mect_1ano/IC/Prática/sndfile-example-src/build/CMakeFiles 2
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/wav_dct.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/pedro/Documents/UA/4o-ano/1o-semestre/IC/Prática/IC/proj1/sndfile-example-src/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/andre/github/mect_1ano/IC/Prática/sndfile-example-src/build/CMakeFiles 0
 .PHONY : CMakeFiles/wav_dct.dir/rule
 
 # Convenience name for target.

@@ -1,1 +1,1 @@
-/usr/bin/c++  -Wall -Wextra -std=c++17 -O3 CMakeFiles/wav_hist.dir/wav_hist.cpp.o -o /home/pedro/Documents/UA/4o-ano/1o-semestre/IC/Prática/IC/proj1/sndfile-example-bin/wav_hist  -lsndfile 
+/usr/bin/c++  -Wall -Wextra -std=c++17 -O3 CMakeFiles/wav_hist.dir/wav_hist.cpp.o -o /home/andre/github/mect_1ano/IC/Prática/sndfile-example-bin/wav_hist  -lsndfile 
