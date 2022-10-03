@@ -1,5 +1,0 @@
-/home/andre/github/mect_1ano/IC/Prática/sndfile-example-src/build/CMakeFiles/wav_cp.dir
-/home/andre/github/mect_1ano/IC/Prática/sndfile-example-src/build/CMakeFiles/wav_hist.dir
-/home/andre/github/mect_1ano/IC/Prática/sndfile-example-src/build/CMakeFiles/wav_dct.dir
-/home/andre/github/mect_1ano/IC/Prática/sndfile-example-src/build/CMakeFiles/edit_cache.dir
-/home/andre/github/mect_1ano/IC/Prática/sndfile-example-src/build/CMakeFiles/rebuild_cache.dir
