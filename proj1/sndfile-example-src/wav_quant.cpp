@@ -1,7 +1,6 @@
 #include <iostream>
 #include <vector>
 #include <sndfile.hh>
-#include "wav_hist.h"
 
 using namespace std;
 
@@ -53,17 +52,12 @@ int main(int argc, char *argv[]) {
     while((nFrames = sfhIn.readf(samples.data(), FRAMES_BUFFER_SIZE))) {
         samples.resize(nFrames * sfhIn.channels());
         for (auto &sample : samples) {
-            //take each short sample and turn into 0 the num_bits_to_cut least significant bits
+            // Take each short sample and turn into 0 the num_bits_to_cut least significant bits
             sample = sample >> num_bits_to_cut;
-            //shift the sample back to its original position
+            // Shift the sample back to its original position
             sample = sample << num_bits_to_cut;
-
-
         }
+
         sfhOut.writef(samples.data(), nFrames);
     }
-
-
-
-
 }

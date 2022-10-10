@@ -30,11 +30,13 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
+	// Choose the channel to process
+	// If the channel is not specified, process the mid or side channel
 	string mode { argv[argc-1] };
 	int channel {};
 	if (mode != "mid" && mode != "side") {
 		try {
-		 channel = stoi(argv[argc-1]);
+			channel = stoi(argv[argc-1]);
 		} catch(exception &err) {
 			cerr << "Error: invalid mode requested\n";
 			return 1;
@@ -53,11 +55,13 @@ int main(int argc, char *argv[]) {
 	while((nFrames = sndFile.readf(samples.data(), FRAMES_BUFFER_SIZE))) {
 		samples.resize(nFrames * sndFile.channels());
 
+		// Update the values for channel histogram, mid or side histogram
 		hist.update(samples);
 		hist.update_mid(samples);
 		hist.update_side(samples);
 	}
 
+	// Dump the data according to the mode/channel requested
 	if (mode == "mid") {
 		hist.mid_dump();
 	} else if (mode == "side") {
