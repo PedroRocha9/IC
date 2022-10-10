@@ -55,6 +55,6 @@ int main(int argc, char *argv[]) {
     while((nFrames = sfhIn.readf(samples.data(), FRAMES_BUFFER_SIZE))) {
         samples.resize(nFrames * sfhIn.channels());
         quant.quant(samples, num_bits_to_cut);
-        quant.toFile(sfhOut);
     }
+    quant.toFile(sfhOut);
 }
