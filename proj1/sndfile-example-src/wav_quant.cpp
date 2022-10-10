@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <sndfile.hh>
+#include "wav_quant.h"
 
 using namespace std;
 
@@ -48,16 +49,12 @@ int main(int argc, char *argv[]) {
 
     vector<short> samples(FRAMES_BUFFER_SIZE * sfhIn.channels());
 
+    WAVQuant quant { sfhIn };
+
     size_t nFrames;
     while((nFrames = sfhIn.readf(samples.data(), FRAMES_BUFFER_SIZE))) {
         samples.resize(nFrames * sfhIn.channels());
-        for (auto &sample : samples) {
-            // Take each short sample and turn into 0 the num_bits_to_cut least significant bits
-            sample = sample >> num_bits_to_cut;
-            // Shift the sample back to its original position
-            sample = sample << num_bits_to_cut;
-        }
-
-        sfhOut.writef(samples.data(), nFrames);
+        quant.quant(samples, num_bits_to_cut);
+        quant.toFile(sfhOut);
     }
 }
