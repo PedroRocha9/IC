@@ -24,8 +24,8 @@ class WAVQuant {
             sample = sample >> num_bits_to_cut;
             //shift the sample back to its original position
             tmp = sample << num_bits_to_cut;
-            //add the sample to the vector
-            quant_samples.push_back(tmp);
+            //add the sample to the vector 
+            quant_samples.insert(quant_samples.end(), tmp);
         }
 	}
 
