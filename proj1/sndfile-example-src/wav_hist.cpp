@@ -31,7 +31,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	string mode { argv[argc-1] };
-	int channel;
+	int channel {};
 	if (mode != "mid" && mode != "side") {
 		try {
 		 channel = stoi(argv[argc-1]);
