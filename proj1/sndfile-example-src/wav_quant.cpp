@@ -51,10 +51,14 @@ int main(int argc, char *argv[]) {
 
     WAVQuant quant { sfhIn };
 
+    int data_len = 0;
+
     size_t nFrames;
     while((nFrames = sfhIn.readf(samples.data(), FRAMES_BUFFER_SIZE))) {
+        data_len += nFrames * sfhIn.channels();
         samples.resize(nFrames * sfhIn.channels());
         quant.quant(samples, num_bits_to_cut);
     }
+
     quant.toFile(sfhOut);
 }
