@@ -47,8 +47,6 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-    cout << "file 1 " << sfhIn1.frames() << endl;
-    cout << "file 2 " << sfhIn2.frames() << endl;
     // Check if files have the same number of frames
     if(sfhIn1.frames() != sfhIn2.frames()) {
         cerr << "Error: files have different number of frames\n";
@@ -70,8 +68,8 @@ int main(int argc, char *argv[]) {
         samples_f2.resize(nFrames * sfhIn2.channels());
 
         for (long unsigned int i = 0; i < samples_f1.size(); i++) {
-            energy_signal += abs(samples_f1[i]);
-            energy_noise += abs(samples_f1[i] - samples_f2[i]);
+            energy_signal += abs(samples_f1[i])^2;
+            energy_noise += abs(samples_f1[i] - samples_f2[i])^2;
         }    
     }
 

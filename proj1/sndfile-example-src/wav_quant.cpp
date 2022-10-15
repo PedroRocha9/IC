@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
 
     vector<short> samples(FRAMES_BUFFER_SIZE * sfhIn.channels());
 
-    WAVQuant quant { sfhIn };
+    WAVQuant quant { };
 
     int data_len = 0;
 

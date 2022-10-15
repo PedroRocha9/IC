@@ -11,9 +11,8 @@ class WAVQuant {
   private:
     std::vector<short> quant_samples;
 
-
   public:
-	WAVQuant(const SndfileHandle& sfh) {
+	WAVQuant() {
 		quant_samples.resize(0);
 	}
 
@@ -31,9 +30,7 @@ class WAVQuant {
 	void toFile(SndfileHandle sfhOut) const {
         //print quant_samples size
         sfhOut.write(quant_samples.data(), quant_samples.size());
-		
 	}
 };
 
 #endif
-
