@@ -25,3 +25,6 @@ target_link_libraries (wav_quant sndfile)
 
 add_executable(wav_cmp wav_cmp.cpp)
 target_link_libraries (wav_cmp sndfile)
+
+add_executable(decoder decoder.cpp)
+target_link_libraries (decoder)
