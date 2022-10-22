@@ -2,6 +2,7 @@
 #include <vector>
 #include <sndfile.hh>
 #include "wav_hist.h"
+#include <math.h>
 
 using namespace std;
 
@@ -42,7 +43,7 @@ int main(int argc, char *argv[]) {
     float gain;
     int delay;
 
-    if (wanted_effect != "single_echo" && wanted_effect != "multiple_echo") {
+    if (wanted_effect != "single_echo" && wanted_effect != "multiple_echo" && wanted_effect != "amplitude_modulation" && wanted_effect != "reverse") {
         cerr << "Error: invalid effects\nUsage: wav_effects.cpp <input file> <output_file> <wanted_effect> <gain> <delay>\n";
         return 1;
     }
@@ -89,9 +90,26 @@ int main(int argc, char *argv[]) {
             }
         }
     }
-    
-    // y(n) = x(n) * cos(escolher a freq baixa para se notar mais os valores de oscilação)
-    // cos(2*pi*(f/fa)*n)
-    
+    // (escolher a freq baixa para se notar mais os valores de oscilação)
+    else if (wanted_effect == "amplitude_modulation"){
+        // y(n) = x(n) * cos                
+        // cos(2*pi*(f/fa)*n)
+        while(nFrames = sfhIn.readf(samples.data(), FRAMES_BUFFER_SIZE)) {
+            samples.resize(nFrames * sfhIn.channels());
+            for (int i = 0; i < samples.size(); i++) {
+                sample_out = samples.at(i) * cos(2 * M_PI * (1000/sfhIn.samplerate()) * i);
+                samples_out.insert(samples_out.end(), sample_out);
+            }
+        }
+    }
+    else if(wanted_effect == "reverse"){
+        while((nFrames = sfhIn.readf(samples.data(), FRAMES_BUFFER_SIZE))) {
+            samples.resize(nFrames * sfhIn.channels());
+            for (int i = samples.size() - 1; i >= 0; i--) {
+                samples_out.insert(samples_out.end(), samples.at(i));
+            }
+        }        
+    }
+
     sfhOut.writef(samples_out.data(), samples_out.size() / sfhIn.channels());
 }
