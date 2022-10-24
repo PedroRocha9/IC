@@ -59,7 +59,8 @@ int main(int argc, char *argv[]) {
     size_t nFrames;
     double energy_signal { 0 };
     double energy_noise { 0 };
-    double snr;
+    double max_error { 0 };
+    double snr { 0 };
 
     while((nFrames = sfhIn1.readf(samples_f1.data(), FRAMES_BUFFER_SIZE))) {
         sfhIn2.readf(samples_f2.data(), FRAMES_BUFFER_SIZE);
@@ -70,9 +71,11 @@ int main(int argc, char *argv[]) {
         for (long unsigned int i = 0; i < samples_f1.size(); i++) {
             energy_signal += abs(samples_f1[i])^2;
             energy_noise += abs(samples_f1[i] - samples_f2[i])^2;
+            max_error = abs(samples_f1[i] - samples_f2[i]) > max_error ? abs(samples_f1[i] - samples_f2[i]) : max_error;
         }    
     }
 
     snr = 10 * log10(energy_signal / energy_noise);
     cout << "SNR: " << snr << " dB" << endl;
+    cout << "Maximum Absolute Error: " << max_error << endl;
 }

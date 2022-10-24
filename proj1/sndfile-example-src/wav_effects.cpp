@@ -100,14 +100,8 @@ int main(int argc, char *argv[]) {
             samples.resize(nFrames * sfhIn.channels());
 
             for (int i = 0; i < (int)samples.size(); i++) {
-                cout << "samples " << endl;
-                cout << samples.at(i) << endl;
-
-                sample_out = samples.at(i) * cos(2 * M_PI * (5/sfhIn.samplerate()) * i);
+                sample_out = samples.at(i) * cos(2 * M_PI * (1.0/sfhIn.samplerate()) * i);
                 samples_out.insert(samples_out.end(), sample_out);
-
-                cout << "samples out" << endl;
-                cout << samples_out.at(i) << endl;
             }
         }
     } else if(wanted_effect == "reverse") {
