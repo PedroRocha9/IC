@@ -43,9 +43,17 @@ class BitStream {
         }
 
         int getFileSize() {
-            file.seekg(0, std::ios::end);
-            int size = file.tellg();
-            file.seekg(0, std::ios::beg);
+            // file.seekg(0, std::ios::end);
+            // int size = file.tellg();
+            // file.seekg(0, std::ios::beg);
+
+            //create a duplicate file stream
+            std::fstream file2;
+            file2.open(fileName, std::ios::in | std::ios::binary);
+            file2.seekg(0, std::ios::end);
+            int size = file2.tellg();
+            file2.seekg(0, std::ios::beg);
+            file2.close();
             return size;
         }
 
@@ -143,6 +151,10 @@ class BitStream {
             //open the file and write the next n bits
             //n is size of bits
             int n = bits.size();
+
+            // std::cout << "n: " << n-64 << std::endl;
+
+            int bitCount = 0;
             while (n > 0){
                 if (currentBitPos == 8){
                 //reset the current bit position
@@ -156,11 +168,11 @@ class BitStream {
                     byteArray.push_back(bitArray);
                 }
                 //write the next bit to the current array
-                bitArray[currentBitPos] = bits[0];
-                bits.erase(bits.begin());
+                bitArray[currentBitPos] = bits[bitCount];
                 //add bitArray to the currentArrayPos in byteArray
                 byteArray[currentArrayPos] = bitArray;
                 currentBitPos++;
+                bitCount++;
                 n--;
 
             }
