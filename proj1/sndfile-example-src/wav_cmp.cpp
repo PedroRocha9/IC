@@ -71,7 +71,7 @@ int main(int argc, char *argv[]) {
         for (long unsigned int i = 0; i < samples_f1.size(); i++) {
             energy_signal += abs(samples_f1[i])^2;
             energy_noise += abs(samples_f1[i] - samples_f2[i])^2;
-            max_error = abs(samples_f1[i] - samples_f2[i])/2 > max_error ? abs(samples_f1[i] - samples_f2[i])/2 : max_error;
+            max_error = abs(samples_f1[i] - samples_f2[i]) > max_error ? abs(samples_f1[i] - samples_f2[i]) : max_error;
         }    
     }
 

@@ -46,11 +46,11 @@ int main(int argc, char *argv[]) {
     float freq = 1.0;
 
     if (wanted_effect != "single_echo" && wanted_effect != "multiple_echo" && wanted_effect != "amplitude_modulation" && wanted_effect != "reverse") {
-        cerr << "Error: invalid effects\nUsage: wav_effects.cpp <input file> <output_file> <wanted_effect> <gain> <delay>\n";
+        cerr << "Error: invalid effects\nUsage: wav_effects.cpp <input file> <output_file> <wanted_effect> [delay | freq] [gain]\n";
         return 1;
     } else if (wanted_effect == "single_echo" || wanted_effect == "multiple_echo") {
         if (argc != 6) {
-            cerr << "Error: invalid number of arguments\nUsage: wav_effects.cpp <input file> <output_file> <wanted_effect> <gain> <delay>\n";
+            cerr << "Error: invalid number of arguments\nUsage: wav_effects.cpp <input file> <output_file> <wanted_effect> <delay> <gain>\n";
             return 1;
         }
 
