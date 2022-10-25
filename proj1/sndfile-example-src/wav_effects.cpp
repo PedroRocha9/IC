@@ -12,7 +12,7 @@ constexpr size_t FRAMES_BUFFER_SIZE = 65536; // Buffer for reading frames
 int main(int argc, char *argv[]) {
 
 	if(argc < 4) {
-		cerr << "Usage: " << argv[0] << " <input file> <output_file> <wanted_effect> <gain> <delay>\n";
+		cerr << "Usage: " << argv[0] << " <input file> <output_file> <wanted_effect> [delay | freq] [gain]\n";
 		return 1;
 	}
 
@@ -43,22 +43,39 @@ int main(int argc, char *argv[]) {
     // Check if the wanted_effect is single_echo or multiple_echo
     float gain = 0.8;
     int delay = 44100;
+    float freq = 1.0;
 
     if (wanted_effect != "single_echo" && wanted_effect != "multiple_echo" && wanted_effect != "amplitude_modulation" && wanted_effect != "reverse") {
-        cerr << "Error: invalid effects\nUsage: wav_effects.cpp <input file> <output_file> <wanted_effect> <gain> <delay in Hertz>\n";
+        cerr << "Error: invalid effects\nUsage: wav_effects.cpp <input file> <output_file> <wanted_effect> <gain> <delay>\n";
         return 1;
-    }
-    else if (wanted_effect == "single_echo" || wanted_effect == "multiple_echo") {
+    } else if (wanted_effect == "single_echo" || wanted_effect == "multiple_echo") {
+        if (argc != 6) {
+            cerr << "Error: invalid number of arguments\nUsage: wav_effects.cpp <input file> <output_file> <wanted_effect> <gain> <delay>\n";
+            return 1;
+        }
+
         // Check if the gain, delay and echo_multiplicity are valid
         try {
-            gain = stof(argv[argc-2]);
             delay = stoi(argv[argc-1]);
+            gain = stof(argv[argc-2]);
         } catch(exception &err) {
             cerr << "Error: invalid gain or delay\n";
             return 1;
         }
-    }
-    else if ((wanted_effect == "amplitude_modulation" || wanted_effect == "reverse") && argc > 4){
+    } else if (wanted_effect == "amplitude_modulation") {
+        if (argc != 5) {
+            cerr << "Error: invalid number of arguments\nUsage: wav_effects.cpp <input file> <output_file> amplitude_modulation <freq>\n";
+            return 1;
+        }
+
+        // Check if frequency is valid
+        try {
+            freq = stof(argv[argc-1]);
+        } catch(exception &err) {
+            cerr << "Error: invalid frequency\n";
+            return 1;
+        }
+    } else if (wanted_effect == "reverse" && argc != 4) {
         cerr << "Error: invalid arguments\nUsage: wav_effects.cpp <input file> <output_file> <amplitude_modulation || reverse>\n";
         return 1;
     }
@@ -75,21 +92,18 @@ int main(int argc, char *argv[]) {
             samples.resize(nFrames * sfhIn.channels());
             
             for (int i = 0; i < (int)samples.size(); i++) {
-                if (wanted_effect == "single_echo") {
-                    // y(n) = x(n) + a * x(n-delay)
-                    if (i >= delay) {      
-                        sample_out = (samples.at(i) + gain * samples.at(i - delay))/(1 + gain);
-                    } else {
-                        sample_out = samples.at(i);
+                if (i >= delay) {
+                    if (wanted_effect == "single_echo") {
+                        // Single Echo: y(n) = x(n) + a * x(n-delay)
+                        
+                        sample_out = (samples.at(i) + gain * samples.at(i - delay)) / (1 + gain);
+                    } else if (wanted_effect == "multiple_echo") {
+                        // Multiple Echo: y(n) = x(n) + a * y(n-delay)
+                        sample_out = (samples.at(i) + gain * samples_out.at(i - delay)) / (1 + gain);
                     }
-                } else if (wanted_effect == "multiple_echo") {
-                    // y(n) = x(n) + a * y(n-delay)
-                    if (i >= 1) {
-                        sample_out = (samples.at(i) + gain * samples_out.at(i - 1))/(1 + gain);
-                    } else {
-                        sample_out = samples.at(i);
-                    }
-                }               
+                } else {
+                    sample_out = samples.at(i);
+                }
 
                 samples_out.insert(samples_out.end(), sample_out);
             }
@@ -100,7 +114,7 @@ int main(int argc, char *argv[]) {
             samples.resize(nFrames * sfhIn.channels());
 
             for (int i = 0; i < (int)samples.size(); i++) {
-                sample_out = samples.at(i) * cos(2 * M_PI * (1.0/sfhIn.samplerate()) * i);
+                sample_out = samples.at(i) * cos(2 * M_PI * (freq/sfhIn.samplerate()) * i);
                 samples_out.insert(samples_out.end(), sample_out);
             }
         }
