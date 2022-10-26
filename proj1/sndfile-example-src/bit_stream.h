@@ -33,7 +33,10 @@ class BitStream {
                 fileSize = getFileSize();
 
             } else if (mode == "w") {
-                file.open(fileName, std::ios::out | std::ios::binary);
+                //clear the file if it already exists, 
+                //otherwise create a new file
+                //append mode
+                file.open(fileName, std::ios::out | std::ios::binary | std::ios::trunc);
                 currentBitPos = 0;
                 currentArrayPos = 0;
             } else {
@@ -43,9 +46,6 @@ class BitStream {
         }
 
         int getFileSize() {
-            // file.seekg(0, std::ios::end);
-            // int size = file.tellg();
-            // file.seekg(0, std::ios::beg);
 
             //create a duplicate file stream
             std::fstream file2;
@@ -147,7 +147,6 @@ class BitStream {
                 std::cout << "File is not open for writing" << std::endl;
                 return;
             }
-            //this function writes the next n bits to the file
             //open the file and write the next n bits
             //n is size of bits
             int n = bits.size();
@@ -157,20 +156,19 @@ class BitStream {
             int bitCount = 0;
             while (n > 0){
                 if (currentBitPos == 8){
-                //reset the current bit position
-                //go to the next array in byteArray
-                currentArrayPos++;
-                currentBitPos = 0;
+                    //reset the current bit position
+                    //write the bitArray to the end of the file
+                    char byte = bitArrayToByte(bitArray);
+                    file.write(&byte, 1);
+                    currentBitPos = 0;
                 }
                 //if the current bit position is 0, then we need to create a new array
                 if (currentBitPos == 0){
                     bitArray = std::vector<int>(8);
-                    byteArray.push_back(bitArray);
+                    // byteArray.push_back(bitArray);
                 }
                 //write the next bit to the current array
                 bitArray[currentBitPos] = bits[bitCount];
-                //add bitArray to the currentArrayPos in byteArray
-                byteArray[currentArrayPos] = bitArray;
                 currentBitPos++;
                 bitCount++;
                 n--;
@@ -184,43 +182,31 @@ class BitStream {
                 std::cout << "File is not open for writing" << std::endl;
                 return;
             }
-            //this function writes the next bit to the file
-            //open the file and write the next bit
+
             //if the current bit position is 8, then we need to change it to 0
             if (currentBitPos == 8){
                 //reset the current bit position
-                //go to the next array in byteArray
-                currentArrayPos++;
+                char byte = bitArrayToByte(bitArray);
+                //write the bitArray to the end of the file
+                file.write(&byte, 1);
                 currentBitPos = 0;
             }
             //if the current bit position is 0, then we need to create a new array
             if (currentBitPos == 0){
                 bitArray = std::vector<int>(8);
-                byteArray.push_back(bitArray);
             }
             //write the next bit to the current array
             bitArray[currentBitPos] = bit;
-            //add bitArray to the currentArrayPos in byteArray
-            byteArray[currentArrayPos] = bitArray;
             currentBitPos++;
             
         }
 
 
         void close(){
+            //write the bitArray to the file
+            char byte = bitArrayToByte(bitArray);
+            file.write(&byte, 1);
 
-            if (fileMode == "w"){
-                //write the byteArray to the file
-                for (int i = 0; i < byteArray.size(); i++){
-                    char byte = 0;
-                    //inversed
-                    for (int j = 0; j < 8; j++){
-                        byte = byte << 1;
-                        byte = byte | byteArray[i][j];
-                    }
-                    file.write(&byte, 1);
-                }
-            }
             file.close();
         }
 };
