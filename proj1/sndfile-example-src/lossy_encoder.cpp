@@ -73,7 +73,7 @@ int main (int argc, char *argv[])
 			fftw_execute(plan_d);
 			
 			for(size_t k = 0 ; k < bs - discarded_units_per_block ; k++){
-				x_dct[c][n * bs + k] = x[k] / (bs << 1);
+				x_dct[c][n * bs + k] = x[k] / (bs << 1) * 100;
             }
             tmp++;
 
@@ -113,8 +113,9 @@ int main (int argc, char *argv[])
     for(size_t n = 0 ; n < nBlocks ; n++)
 		for(size_t c = 0 ; c < nChannels ; c++) {
 			for(size_t k = 0 ; k < bs ; k++){
-                int tmp = x_dct[c][n * bs + k];
-				values.push_back(tmp);
+                int tmp2 = x_dct[c][n * bs + k];
+				values.push_back(tmp2);
+                // cout << tmp2 << endl;
             }
         }
 
@@ -122,7 +123,7 @@ int main (int argc, char *argv[])
 
     // cout << "bs: " << bs << endl;
     // cout << "nBlocks: " << nBlocks << endl;
-    //cout << "nChannels: " << nChannels << endl;
+    // cout << "nChannels: " << nChannels << endl;
     // cout << "sfhIn.samplerate(): " << sfhIn.samplerate() << endl;
     // cout << "nFrames: " << nFrames << endl;
 
@@ -131,17 +132,19 @@ int main (int argc, char *argv[])
         // cout << values[n] << endl;
         // cout << "n: " << n << endl;
         vector<int> temp_array (32);
-        //convert values[n] to binary (16 bits) and insert the in the 15 to 31 positions of temp_array
-        for (int i = 15; i >= 0; i--){
+        //convert values[n] to binary
+        for (int i = 31; i >= 0; i--){
             temp_array[i] = (values[n] >> i) & 1;
         }
-        //extend the sign bit to the 16 first positions of temp_array
-        for (int i = 0; i < 16; i++){
-            temp_array[i+16] = temp_array[15];
+        //reverse the temp_array
+        vector<int> temp_array2 (32);
+        for (int i = 0; i < 32; i++){
+            temp_array2[i] = temp_array[31-i];
         }
-        //push back all the bits of temp_array to bits
+
+        //push back all the bits of temp_array2 to bits
         for (int i = 31; i >=0; i--){
-            bits.push_back(temp_array[i]);
+            bits.push_back(temp_array2[i]);
         }
     }
 

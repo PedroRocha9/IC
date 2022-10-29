@@ -54,9 +54,9 @@ int main (int argc, char *argv[])
 
     // cout << "bs: " << bs << endl;
     // cout << "nBlocks: " << nBlocks << endl;
-    //cout << "nChannels: " << nChannels << endl;
+    // cout << "nChannels: " << nChannels << endl;
     // cout << "sampleRate: " << sampleRate << endl;
-    //cout << "nFrames: " << nFrames << endl;
+    // cout << "nFrames: " << nFrames << endl;
 
     SndfileHandle sfhOut { argv[argc-1], SFM_WRITE, SF_FORMAT_WAV | SF_FORMAT_PCM_16, nChannels, sampleRate };
 	if(sfhOut.error()) {
@@ -67,8 +67,6 @@ int main (int argc, char *argv[])
     int total = bitStream.getFileSize() - 12;
     long totalBits = total*8;
 
-    // cout << "totalBits: " << totalBits << endl;
-
     vector<int> x_dct_bits = bitStream.readBits(totalBits);
     vector<vector<double>> x_dct(nChannels, vector<double>(nBlocks * bs));
     vector<int> tmp;
@@ -77,31 +75,28 @@ int main (int argc, char *argv[])
     for(int i = 0; i < x_dct_bits.size(); i+=32) {
         //each 32 bits is a int (signed)
         int temp = 0;
-        for(int j = 0; j < 32; j++) {
-            temp += x_dct_bits[i+j] * pow(2, 31 - j);
+        
+        vector<int> reversed_temp;
+
+        for(int j = 31; j >= 0; j--) {
+            reversed_temp.push_back(x_dct_bits[i+j]);
+        }
+
+        //convert to int
+        for(int j = 0; j < reversed_temp.size(); j++) {
+            temp += reversed_temp[j] * pow(2, reversed_temp.size() - j - 1);
         }
         tmp.push_back(temp);
     }
 
     bitStream.close();
 
-    //x_dct is a array of vector<int> turned into a vector of ints
-    //the conversion was made to make it easier to read the bits from the file
-    //the original loop was:
-    //vector<int>tmp;
-    // for(int n = 0; i < nBlocks; i++) {
-        //for(int c = 0; c < nChannels; c++) {
-            //for (int k = 0; k < bs; k++) {
-                //tmp.push_back(x_dct[c][n*bs + k]);
-
-    //in this file, we read the bits from the file and convert them to ints, wich is our tmp vector
-    //now, we need to convert tmp to x_dct (vector<vector<int>>) again keeping the same order
-    //the conversion is made in the following loop
     int count = 0;
     for(int n = 0; n < nBlocks; n++) {
         for(int c = 0; c < nChannels; c++) {
             for (int k = 0; k < bs; k++) {
-                x_dct[c][n*bs + k] = tmp[count];
+                //divide temp by 100 to get the original value as a decimal with 2 decimal places
+                x_dct[c][n*bs + k] = tmp[count]/100.0;
                 count++;
             }
         }
@@ -115,20 +110,16 @@ int main (int argc, char *argv[])
 	fftw_plan plan_i = fftw_plan_r2r_1d(bs, x.data(), x.data(), FFTW_REDFT01, FFTW_ESTIMATE);
 	for(size_t n = 0 ; n < nBlocks ; n++)
 		for(size_t c = 0 ; c < nChannels ; c++) {
-			for(size_t k = 0 ; k < bs ; k++)
+			for(size_t k = 0 ; k < bs ; k++){
 				x[k] = x_dct[c][n * bs + k];
+                // cout << x[k] << endl;
+            }
 
 			fftw_execute(plan_i);
 			for(size_t k = 0 ; k < bs ; k++)
 				samples[(n * bs + k) * nChannels + c] = static_cast<short>(round(x[k]));
 
 		}
-
-    //print samples
-    // for (int i = 0; i < samples.size(); i++) {
-    //     cout << samples[i] << endl;
-    // }
-
     
     
     sfhOut.writef(samples.data(), nFrames);
