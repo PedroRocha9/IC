@@ -9,6 +9,10 @@ using namespace std;
 
 int main (int argc, char *argv[])
 {
+
+    //start a timer
+    clock_t start = clock();
+
     size_t bs { 1024 };
     size_t discarded_units_per_block { 8 };
 
@@ -102,7 +106,7 @@ int main (int argc, char *argv[])
         bits.push_back((sfhIn.samplerate() >> i) & 1);
     }
 
-    //the next 16 bits are the nFrames converted to binary
+    //the next 32 bits are the nFrames converted to binary
     for (int i = 31; i >= 0; i--){
         bits.push_back((nFrames >> i) & 1);
     }
@@ -127,7 +131,6 @@ int main (int argc, char *argv[])
     // cout << "sfhIn.samplerate(): " << sfhIn.samplerate() << endl;
     // cout << "nFrames: " << nFrames << endl;
 
-
     for(size_t n = 0 ; n < values.size() ; n++){
         // cout << values[n] << endl;
         // cout << "n: " << n << endl;
@@ -151,6 +154,14 @@ int main (int argc, char *argv[])
     
     outputFile.writeBits(bits);
     outputFile.close();
+
+    //end the timer
+    clock_t end = clock();
+    double elapsed_secs = double(end - start) / CLOCKS_PER_SEC;
+    //convert the time to milliseconds
+    elapsed_secs = elapsed_secs * 1000;
+    cout << "Time: " << elapsed_secs << " ms" << endl;
+    
     return 0;
     
 }
