@@ -101,6 +101,8 @@ To check results listen to the audio file or do a reverse of reverse.wav and see
 ./decoder lusiadas.txt lusiadas_decoded.txt
 ```
 
+<br>
+
 **To encode a text file**
 ```bash
 ./decoder lusiadas_decoded.txt lusiadas_encoded.txt
