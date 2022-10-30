@@ -10,6 +10,8 @@ using namespace std;
 constexpr size_t FRAMES_BUFFER_SIZE = 65536; // Buffer for reading frames
 
 int main(int argc, char *argv[]) {
+    //start a timer
+    clock_t start = clock();
 
 	if(argc < 4) {
 		cerr << "Usage: " << argv[0] << " <input file> <output_file> <wanted_effect> [delay | freq] [gain]\n";
@@ -127,4 +129,11 @@ int main(int argc, char *argv[]) {
     }
 
     sfhOut.writef(samples_out.data(), samples_out.size() / sfhIn.channels());
+
+    //end the timer
+    clock_t end = clock();
+    double elapsed_secs = double(end - start) / CLOCKS_PER_SEC;
+    //convert the time to milliseconds
+    elapsed_secs = elapsed_secs * 1000;
+    cout << "Time: " << elapsed_secs << " ms" << endl;
 }

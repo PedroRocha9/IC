@@ -3,7 +3,7 @@
 #include <cmath>
 #include <fftw3.h>
 #include <sndfile.hh>
-#include "bit_stream.h"
+#include "bitStream.h"
 
 using namespace std;
 
