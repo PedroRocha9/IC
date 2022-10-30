@@ -96,4 +96,14 @@ To check results listen to the audio file or do a reverse of reverse.wav and see
 
 ### Exercise 7
 
+**To decode a text file**
+```bash
+./decoder lusiadas.txt lusiadas_decoded.txt
+```
+
+**To encode a text file**
+```bash
+./decoder lusiadas_decoded.txt lusiadas_encoded.txt
+```
+
 ### Exercise 8
