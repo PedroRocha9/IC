@@ -109,3 +109,15 @@ To check results listen to the audio file or do a reverse of reverse.wav and see
 ```
 
 ### Exercise 8
+
+**To encode an audio file using the codec**
+```bash
+./lossy_encoder ../sndfile-example-src/sample.wav lossy_encoded_sample 1024 819
+```
+
+<br>
+
+**To decode a binary file containing the DCT coeficients**
+```bash
+./lossy_decoder lossy_encoded_sample lossy_decoded_sample.wav
+```
