@@ -37,6 +37,12 @@ int main (int argc, char *argv[])
         return 1;
     }
 
+    //assert that discarded_units_per_block is < block_size
+    if(stoi(argv[argc-1]) > stoi(argv[argc-2])) {
+        cerr << "Error: discarded_units_per_block must be < block_size\n";
+        return 1;
+    }
+
     string outputFileName = argv[2];
 
     bs = atoi(argv[3]);
