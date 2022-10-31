@@ -11,7 +11,7 @@ SET (CMAKE_CXX_FLAGS_RELEASE "-O3")
 SET (CMAKE_CXX_FLAGS_DEBUG "-g3 -fsanitize=address")
 
 SET (BASE_DIR ${CMAKE_SOURCE_DIR} )
-SET (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BASE_DIR}/../opencv-example-bin)
+SET (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BASE_DIR}/../opencv-bin)
 
 add_executable (cp_image cp_image.cpp)
 target_link_libraries (cp_image ${OpenCV_LIBS})
