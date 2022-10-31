@@ -18,8 +18,17 @@ int main(int argc, char** argv) {
     // Read the image file
     Mat img = imread(argv[1]);
 
-    for (int i = 0; i < img.rows; i++) {
-        for (int j = 0; j < img.cols * img.channels(); j++) {
+    int nRows = img.rows;
+    int nCols = img.cols * img.channels();
+
+    // check if image is continous
+    if (img.isContinuous()) {
+        nCols *= img.rows;
+        nRows = 1;
+    }
+
+    for (int i = 0; i < nRows; i++) {
+        for (int j = 0; j < nCols; j++) {
             img.at<uchar>(i, j) = 255 - img.at<uchar>(i, j);
         }
     }
