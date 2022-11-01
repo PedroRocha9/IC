@@ -22,8 +22,8 @@ target_link_libraries (negative_image ${OpenCV_LIBS})
 add_executable (mirror_image mirror_image.cpp)
 target_link_libraries (mirror_image ${OpenCV_LIBS})
 
-# add_executable (rotate_image rotate_image.cpp)
-# target_link_libraries (rotate_image ${OpenCV_LIBS})
+add_executable (rotate_image rotate_image.cpp)
+target_link_libraries (rotate_image ${OpenCV_LIBS})
 
 add_executable (bright_image bright_image.cpp)
 target_link_libraries (bright_image ${OpenCV_LIBS})
