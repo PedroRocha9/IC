@@ -10,13 +10,19 @@ int main(int argc, char** argv) {
     //start a timer
     clock_t start = clock();
     
-    if (argc < 2) {	
-        cerr << "Usage: " << argv [0] << " <input file>\n" ;
+    if (argc < 3) {	
+        cerr << "Usage: " << argv [0] << " <input file> <output file> [view]" << endl;
         return 1 ;
     }
 
     // Read the image file
     Mat img = imread(argv[1]);
+
+    if (img.empty()) {
+        cerr << "Could not open or find the image!" << endl; ;
+        cerr << "Usage: " << argv [0] << " <input file> <output file> [view]" << endl;
+        return -1;
+    }
 
     int nRows = img.rows;
     int nCols = img.cols * img.channels();
@@ -33,6 +39,8 @@ int main(int argc, char** argv) {
         }
     }
 
+    imwrite(argv[2], img);
+
     //end the timer
     clock_t end = clock();
     double elapsed_secs = double(end - start) / CLOCKS_PER_SEC;
@@ -40,8 +48,14 @@ int main(int argc, char** argv) {
     elapsed_secs = elapsed_secs * 1000;
     cout << "Time: " << elapsed_secs << " ms" << endl;
 
-    imshow("Negative Image", img);
-    waitKey(0);
+    try {
+        if (string(argv[3]) == "view") {
+            imshow("Negative Image", img);
+            waitKey(0);
+        }
+    } catch (exception& e) {
+        return 0;
+    }
 
     return 0;
 }
