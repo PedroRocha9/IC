@@ -12,7 +12,7 @@ int main( int argc, char** argv ) {
     clock_t start = clock();
 
     if (argc < 3){
-        cout << "Usage: "<< argv[0] <<" <input_image> <output_image> [view]" << endl;
+        cout << "Usage: "<< argv[0] <<" <input file> <output file> [view]" << endl;
         return -1;
     }
 
