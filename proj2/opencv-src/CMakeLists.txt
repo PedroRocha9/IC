@@ -27,3 +27,9 @@ target_link_libraries (rotate_image ${OpenCV_LIBS})
 
 add_executable (bright_image bright_image.cpp)
 target_link_libraries (bright_image ${OpenCV_LIBS})
+
+add_executable (golomb_encoder golomb_encoder.cpp)
+target_link_libraries (golomb_encoder ${OpenCV_LIBS})
+
+add_executable (golomb_decoder golomb_decoder.cpp)
+target_link_libraries (golomb_decoder ${OpenCV_LIBS})
