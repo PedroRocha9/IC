@@ -5,35 +5,36 @@
 using namespace cv;
 using namespace std;
 
-int main(int argc, char *argv[]){
+int main(int argc, char *argv[]) {
     // start a timer
     clock_t start = clock();
     
-    if (argc < 3) {
-        cout << "it entered lmao" << endl;
-        cerr << "Usage: " << argv[0] << " <image_file> <degrees_to_rotate>" << endl;
+    if (argc < 4) {
+        cerr << "Usage: " << argv[0] << " <image file> <output file> <degrees_to_rotate> [view]" << endl;
         return 1;
+    }
+
+    // reading image file
+    Mat img = imread(argv[1]);
+    if (img.empty()) {
+        cerr << "Could not open or find the image!" << endl; ;
+        cerr << "Usage: " << argv[0] << " <image file> <output file> <degrees_to_rotate> [view]" << endl;
+        return -1;
     }
 
     // verify that degrees_to_rotate is a multiple of 90
-    int degrees_to_rotate = atoi(argv[2]);
-    if (atoi(argv[2]) % 90 != 0) {
+    int degrees_to_rotate = atoi(argv[3]);
+    if (atoi(argv[3]) % 90 != 0) {
         cerr << "Degrees to rotate must be a multiple of 90" << endl;
-        return 1;
-    }
-
-    //reading image file
-    Mat image = imread(argv[1]);
-    if (!image.data) {
-        cerr << "Could not open or find the image" << endl;
         return 1;
     }
 
     // rotate the image
     Mat rotated_image;
-    Point2f center(image.cols/2.0, image.rows/2.0);
+    Point2f center(img.cols/2.0, img.rows/2.0);
     Mat rot = getRotationMatrix2D(center, degrees_to_rotate, 1.0);
-    warpAffine(image, rotated_image, rot, image.size());
+    warpAffine(img, rotated_image, rot, img.size());
+    imwrite(argv[2], rotated_image);
 
     // end the timer
     clock_t end = clock();
@@ -41,8 +42,14 @@ int main(int argc, char *argv[]){
     // print the time in miliseconds
     cout << "Time: " << elapsed_secs*1000 << " ms" << endl;
 
-    imshow("Rotated Image", rotated_image);
-    waitKey(0);
+    try {
+        if (string(argv[4]) == "view") {
+            imshow("Rotated Image", rotated_image);
+            waitKey(0);
+        }
+    } catch (exception& e) {
+        return 0;
+    }
 
     return 0;
 }
