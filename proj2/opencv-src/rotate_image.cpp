@@ -30,10 +30,28 @@ int main(int argc, char *argv[]) {
     }
 
     // rotate the image
-    Mat rotated_image;
-    Point2f center(img.cols/2.0, img.rows/2.0);
-    Mat rot = getRotationMatrix2D(center, degrees_to_rotate, 1.0);
-    warpAffine(img, rotated_image, rot, img.size());
+    int rotatedRows = degrees_to_rotate % 180 ? img.size().width : img.size().height;
+    int rotatedCols = degrees_to_rotate % 180 ? img.size().height : img.size().width;
+    Mat rotated_image = Mat::zeros(rotatedRows, rotatedCols, img.type());
+
+    int nRows = img.rows;
+    int nCols = img.cols;       // All channels at the same time
+
+    for (int i = 0; i < nRows; i++) {
+        for (int j = 0; j < nCols; j++) {
+            // Stays the same
+            if (degrees_to_rotate % 360 == 0) {
+                rotated_image.at<Vec3b>(i, j) = img.at<Vec3b>(i, j);
+            } else if (degrees_to_rotate % 360 == 270) {
+                rotated_image.at<Vec3b>(j, nRows - 1 - i) = img.at<Vec3b>(i, j);
+            } else if (degrees_to_rotate % 360 == 180) {
+                rotated_image.at<Vec3b>(nRows - 1 - i, nCols - 1 - j) = img.at<Vec3b>(i, j);
+            } else if (degrees_to_rotate % 360 == 90) {
+                rotated_image.at<Vec3b>(nCols - 1 - j, i) = img.at<Vec3b>(i, j);
+            }
+        }
+    }
+
     imwrite(argv[2], rotated_image);
 
     // end the timer
