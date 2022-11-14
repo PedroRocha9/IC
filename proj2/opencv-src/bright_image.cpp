@@ -38,7 +38,18 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    Mat output = img + Scalar::all(b);
+    Mat output = Mat::zeros(img.size(), img.type());
+
+    int nRows = img.rows;
+    int nCols = img.cols;
+
+    for (int i = 0; i < nRows; i++) {
+        for (int j = 0; j < nCols; j++) {
+            for (int c = 0; c < img.channels(); c++) {
+                output.at<Vec3b>(i, j)[c] = saturate_cast<uchar>(img.at<Vec3b>(i, j)[c] + b);
+            }
+        }
+    }
 
     imwrite(argv[2], output);
 
