@@ -38,7 +38,12 @@ To check the results either view the image by running the command with the word 
 
 **Rotated image 90º**
 ```bash
-./rotate_image ../iamge_files/airplane.ppm airplane_rot90.ppm 90
+./rotate_image ../iamge_files/arial.ppm arial_rot90.ppm 90
+```
+
+**Rotated image 180º**
+```bash
+./rotate_image ../iamge_files/arial.ppm arial_rot90.ppm 90
 ```
 
 **Increase Light image**
