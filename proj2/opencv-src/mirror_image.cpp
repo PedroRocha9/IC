@@ -23,7 +23,7 @@ int main(int argc, char** argv) {
         return -1;
     }
 
-    Mat mirror;
+    Mat mirror = Mat::zeros(img.size(), img.type());
     int direction = 0;
 
     if (string(argv[3]) == "h") {
@@ -35,7 +35,18 @@ int main(int argc, char** argv) {
         return 1 ;
     }
 
-    flip(img, mirror, direction);
+    int nRows = img.rows;
+    int nCols = img.cols;       // All channels at the same time
+
+    for (int i = 0; i < nRows; i++) {
+        for (int j = 0; j < nCols; j++) {
+            if (direction) {
+                mirror.at<Vec3b>(nRows - 1 - i, j) = img.at<Vec3b>(i, j);
+            } else {
+                mirror.at<Vec3b>(i, nCols - 1 - j) = img.at<Vec3b>(i, j);
+            }
+        }
+    }
 
     imwrite(argv[2], mirror);
 
