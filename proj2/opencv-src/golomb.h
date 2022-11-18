@@ -65,10 +65,10 @@ class Golomb {
             this->m = m;
             calculateBits();
             remainders_table = calculateRemaindersTable();
-            // print remainders_table
-            for (int i = 0; i < remainders_table.size(); i++) {
-                std::cout << remainders_table[i] << std::endl;
-            }
+            // // print remainders_table
+            // for (int i = 0; i < remainders_table.size(); i++) {
+            //     std::cout << remainders_table[i] << std::endl;
+            // }
         }
         // implement even-odd implementation and compare results
         // function that converts string of bits to integer
