@@ -18,6 +18,19 @@ int main(int argc, char *argv[]) {
         return (a + b + c) / 3;
     };
 
+    //function that predicts the next value in the sequence based on 3 previous values
+    auto predict = [](int a, int b, int c) {
+        //3*a - 3*b + c
+        return 3*a - 3*b + c;
+    };
+
+    //function to calculate m based on u
+    auto calc_m = [](int u) {
+        //u = alpha / 1 - alpha
+        //m = - (1 / log(alpha))
+        return (int) - (1/log((double) u / (1 + u)));
+    };
+
     //start a timer
     clock_t start = clock();
 
@@ -68,54 +81,89 @@ int main(int argc, char *argv[]) {
     size_t nChannels { static_cast<size_t>(sfhIn.channels()) };
 
     vector<short> samples(nChannels * nFrames);
+
 	sfhIn.readf(samples.data(), nFrames);
+
+    vector<short> left_samples(nFrames);
+    vector<short> right_samples(nFrames);
+
+    if (nChannels > 1){
+        //split samples into left and right channels
+        for (int i = 0; i < nFrames; i++) {
+            left_samples[i] = samples[i * nChannels];
+            right_samples[i] = samples[i * nChannels + 1];
+        }
+    }
 
 	size_t nBlocks { static_cast<size_t>(ceil(static_cast<double>(nFrames) / bs)) };
 
 	// Do zero padding, if necessary
 	samples.resize(nBlocks * bs * nChannels);
 
-    //this is Golomb coding
-    //create a vector that will hold the values to be encoded
-    //these values are calculated based on predictive coding
-    //starting from the fourth sample, the value to be added to the vector
-    //is the difference between the current sample and the following expression:
-    //current sample - (3*previous sample - 3*previous previous sample + previous previous previous sample)
-    //m can be changed to any value, but it is recommended to be a power of 2
-    //the value of m is calculated every block of bs samples
-    //m is calculated by taking the average of the absolute values of the differences between the samples in the block
-    //the value of m is then rounded to the nearest power of 2
-    //the value of m is then used to encode the differences between the samples in the block
-
+    //zero padding of left and right channels
+    left_samples.resize(nBlocks * bs);
+    right_samples.resize(nBlocks * bs);
 
     vector<int> m_vector;
 
     vector<int> valuesToBeEncoded;
-    for(int i = 0; i < samples.size(); i++) {
-        if (i >= 3) {
-            int difference = samples[i] - average(samples[i-1], samples[i-2], samples[i-3]);
-            valuesToBeEncoded.push_back(difference);
-        }
-        
-        else valuesToBeEncoded.push_back(samples[i]);
-
-        //calculate m every bs samples
-
-        if (i % bs == 0 && i != 0) {
-            int sum = 0;
-            for (int j = i-bs; j < i; j++) {
-                sum += abs(valuesToBeEncoded[j]);
+    if(nChannels < 2){
+        for(int i = 0; i < samples.size(); i++) {
+            if (i >= 3) {
+                int difference = samples[i] - predict(samples[i-1], samples[i-2], samples[i-3]);
+                valuesToBeEncoded.push_back(difference);
             }
-            int m = round(sum/bs);
-            int power = 0;
-            while (m > 1) {
-                m = m/2;
-                power++;
+            
+            else valuesToBeEncoded.push_back(samples[i]);
+        }
+    }
+    else{
+        for(int i = 0; i < nFrames; i++){
+            if (i >= 3) {
+                int difference = left_samples[i] - predict(left_samples[i-1], left_samples[i-2], left_samples[i-3]);
+                valuesToBeEncoded.push_back(difference);
             }
-            m = pow(2, power);
-            m_vector.push_back(m);
+            
+            else valuesToBeEncoded.push_back(left_samples[i]);
+
+            //calculate m every bs samples
+
+            if (i % bs == 0 && i != 0) {
+                int sum = 0;
+                for (int j = i-bs; j < i; j++) {
+                    sum += abs(valuesToBeEncoded[j]);
+                }
+                int u = round(sum/bs);
+                m = calc_m(u);
+                
+                m_vector.push_back(m);
+            }
         }
 
+        for(int i = 0; i < nFrames; i++){
+            if (i >= 3) {
+                int difference = right_samples[i] - predict(right_samples[i-1], right_samples[i-2], right_samples[i-3]);
+                valuesToBeEncoded.push_back(difference);
+            }
+            
+            else valuesToBeEncoded.push_back(right_samples[i]);
+
+            //calculate m every bs samples
+
+            if (i % bs == 0 && i != 0) {
+                int sum = 0;
+                for (int j = i-bs; j < i; j++) {
+                    sum += abs(valuesToBeEncoded[j]);
+                }
+                int u = round(sum/bs);
+                m = calc_m(u);
+
+
+
+                
+                m_vector.push_back(m);
+            }
+        }
     }
 
     // //encode the values
@@ -128,7 +176,6 @@ int main(int argc, char *argv[]) {
         for(int i = 0; i < valuesToBeEncoded.size() ; i++) {
             encodedString += g.encode(valuesToBeEncoded[i], og);
         }
-        cout << "encoded string size: " << encodedString.size() << endl;
     }
     else{
         int m_index = 0;
@@ -172,6 +219,12 @@ int main(int argc, char *argv[]) {
         bits.push_back((sfhIn.channels() >> i) & 1);
     }
     // cout << "channels: " << sfhIn.channels() << endl;
+
+    //the next 32 bits of the file are the number of frames
+    for(int i = 31; i >= 0; i--) {
+        bits.push_back((nFrames >> i) & 1);
+    }
+    // cout << "nFrames: " << nFrames << endl;
 
     //the next 16 bits is the block size
     for(int i = 15; i >= 0; i--) {

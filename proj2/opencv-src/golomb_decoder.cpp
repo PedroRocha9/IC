@@ -15,6 +15,12 @@ int main( int argc, char** argv ) {
         return (a + b + c) / 3;
     };
 
+    //function that predicts the next value in the sequence based on 3 previous values
+    auto predict = [](int a, int b, int c) {
+        //3*a - 3*b + c
+        return 3*a - 3*b + c;
+    };
+
     //start a timer
     clock_t start = clock();
 
@@ -28,6 +34,7 @@ int main( int argc, char** argv ) {
     BitStream bs (argv[1], "r");
 
     vector<int> v_channels = bs.readBits(16);
+    vector<int> v_nFrames = bs.readBits(32);
     vector<int> v_blockSize = bs.readBits(16);
     vector<int> v_num_zeros = bs.readBits(16);
     vector<int> v_m_size = bs.readBits(16);
@@ -36,6 +43,11 @@ int main( int argc, char** argv ) {
     for(int i = 0; i < v_channels.size(); i++) {
         nChannels += v_channels[i] * pow(2, v_channels.size() - i - 1);
     }
+
+    int nFrames = 0;
+    for(int i = 0; i < v_nFrames.size(); i++) {
+        nFrames += v_nFrames[i] * pow(2, v_nFrames.size() - i - 1);
+    }    
 
     // cout << "channels: " << nChannels << endl;
 
@@ -73,7 +85,7 @@ int main( int argc, char** argv ) {
         m_vector.push_back(m_i);
     }
 
-    int total = bs.getFileSize() - (8 + 2*m_size);
+    int total = bs.getFileSize() - (12 + 2*m_size);
     long totalBits = total*8;
     vector<int> v_encoded = bs.readBits(totalBits);
     //convert vector<int> of bits to string of bits
@@ -92,13 +104,46 @@ int main( int argc, char** argv ) {
 
 
     vector<short> samplesVector;
-    for(int i = 0; i < decoded.size(); i++) {
-        if (i >= 3) {
-            int difference = decoded[i] + average(samplesVector[i-1], samplesVector[i-2], samplesVector[i-3]);
-            samplesVector.push_back(difference);
+
+    if(nChannels < 2){
+        for(int i = 0; i < decoded.size(); i++) {
+            if (i >= 3) {
+                int difference = decoded[i] + predict(samplesVector[i-1], samplesVector[i-2], samplesVector[i-3]);
+                samplesVector.push_back(difference);
+            }
+            else samplesVector.push_back(decoded[i]);
         }
-        else samplesVector.push_back(decoded[i]);
     }
+
+    else {
+        for(int i = 0; i < nFrames; i++) {
+            if (i >= 3) {
+                int difference = decoded[i] + predict(samplesVector[i-1], samplesVector[i-2], samplesVector[i-3]);
+                samplesVector.push_back(difference);
+            }
+            else samplesVector.push_back(decoded[i]); 
+        }
+
+        for(int i = nFrames; i < decoded.size(); i++) {
+            if (i >= nFrames + 3) {
+                int difference = decoded[i] + predict(samplesVector[i-1], samplesVector[i-2], samplesVector[i-3]);
+                samplesVector.push_back(difference);
+            }
+            else samplesVector.push_back(decoded[i]); 
+        }
+
+        //merge the two channels into one vector
+        vector<short> merged;
+        //the first channel is the first nFrames samples
+        vector<short> firstChannel(samplesVector.begin(), samplesVector.begin() + nFrames);
+        //the second channel is the last nFrames samples
+        vector<short> secondChannel(samplesVector.begin() + nFrames, samplesVector.end());
+        for(int i = 0; i < nFrames; i++) {
+            merged.push_back(firstChannel[i]);
+            merged.push_back(secondChannel[i]);
+        }
+        samplesVector = merged;
+    }    
 
     //write to wav file the samples vector
     sfhOut.write(samplesVector.data(), samplesVector.size());
