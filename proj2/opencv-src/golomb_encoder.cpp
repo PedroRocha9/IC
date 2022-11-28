@@ -31,27 +31,30 @@ int main(int argc, char *argv[]) {
         return (int) - (1/log((double) u / (1 + u)));
     };
 
-    //start a timer
-    clock_t start = clock();
+    
 
-    if(argc != 4 && argc != 5) {
-		cerr << "Usage: " << argv[0] << " <input file> <output file> <m | bs> [auto] \n";
+    if(argc < 4 || argc > 6) {
+		cerr << "Usage: " << argv[0] << " <input file> <output file> <m | bs> [auto] [q] \n";
 		return 1;
 	}
 
-    //check if "-auto" is passed in
+    int q = 0;
+    //check if "auto" is passed in
     bool autoMode = false;
-    if (argc == 5) {
+    bool quantization = false;
+    if (argc >= 5) {
         if (strcmp(argv[4], "auto") == 0) {
             autoMode = true;
         }
+        else {
+            q = atoi(argv[4]);
+            quantization = true;
+        }
     }
 
-    if (!autoMode) {
-        if (argc != 4) {
-            cerr << "Usage: " << argv[0] << " <input file> <output file> <m | bs> [auto] \n";
-            return 1;
-        }
+    if (argc == 6) {
+        q = atoi(argv[5]);
+        quantization = true;
     }
 
     SndfileHandle sfhIn { argv[1] };
@@ -74,6 +77,11 @@ int main(int argc, char *argv[]) {
     string output = argv[2];
 
     short m = atoi(argv[3]);
+
+    //start a timer
+    clock_t start = clock();
+
+
     short bs = m;
     short og = m;
 
@@ -86,6 +94,15 @@ int main(int argc, char *argv[]) {
 
     vector<short> left_samples(nFrames);
     vector<short> right_samples(nFrames);
+
+    if(quantization){
+        cout << "quantization..." << endl;
+        for(int i = 0; i < samples.size(); i++){
+            //remove the q least significant bits
+            samples[i] = samples[i] >> q;
+            
+        }
+    }
 
     if (nChannels > 1){
         //split samples into left and right channels
@@ -135,7 +152,6 @@ int main(int argc, char *argv[]) {
                 }
                 int u = round(sum/bs);
                 m = calc_m(u);
-                
                 m_vector.push_back(m);
             }
         }
@@ -157,10 +173,6 @@ int main(int argc, char *argv[]) {
                 }
                 int u = round(sum/bs);
                 m = calc_m(u);
-
-
-
-                
                 m_vector.push_back(m);
             }
         }
@@ -217,6 +229,11 @@ int main(int argc, char *argv[]) {
     //the first 16 bits of the file are the number of channels
     for(int i = 15; i >= 0; i--) {
         bits.push_back((sfhIn.channels() >> i) & 1);
+    }
+
+    //the next 16 bits of the file are the quantization factor
+    for(int i = 15; i >= 0; i--) {
+        bits.push_back((q >> i) & 1);
     }
     // cout << "channels: " << sfhIn.channels() << endl;
 

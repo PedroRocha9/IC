@@ -34,6 +34,7 @@ int main( int argc, char** argv ) {
     BitStream bs (argv[1], "r");
 
     vector<int> v_channels = bs.readBits(16);
+    vector<int> v_q = bs.readBits(16);
     vector<int> v_nFrames = bs.readBits(32);
     vector<int> v_blockSize = bs.readBits(16);
     vector<int> v_num_zeros = bs.readBits(16);
@@ -42,6 +43,11 @@ int main( int argc, char** argv ) {
     int nChannels = 0;
     for(int i = 0; i < v_channels.size(); i++) {
         nChannels += v_channels[i] * pow(2, v_channels.size() - i - 1);
+    }
+
+    int q = 0;
+    for(int i = 0; i < v_q.size(); i++) {
+        q += v_q[i] * pow(2, v_q.size() - i - 1);
     }
 
     int nFrames = 0;
@@ -116,6 +122,7 @@ int main( int argc, char** argv ) {
     }
 
     else {
+        //da para otimizar apenas com um ciclo e condicionando o i
         for(int i = 0; i < nFrames; i++) {
             if (i >= 3) {
                 int difference = decoded[i] + predict(samplesVector[i-1], samplesVector[i-2], samplesVector[i-3]);
@@ -143,7 +150,21 @@ int main( int argc, char** argv ) {
             merged.push_back(secondChannel[i]);
         }
         samplesVector = merged;
-    }    
+    }
+
+
+    //quantize the samples
+    if (q != 0) {
+        
+        for(int i = 0; i < samplesVector.size(); i++) {
+            //shift the samples to the left by q bits 
+            samplesVector[i] = samplesVector[i] << q;
+            //change the last q bits to half the 2^q value
+            samplesVector[i] = samplesVector[i] | (1 << int(pow(2,q-1)));
+
+        }
+
+    }
 
     //write to wav file the samples vector
     sfhOut.write(samplesVector.data(), samplesVector.size());
