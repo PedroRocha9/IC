@@ -17,9 +17,15 @@ class Golomb {
 
         // calculate max_bits: log2(m) with ceiling to integer, min_bits and values with min_bits
         void calculateBits(int m) {
-            max_bits = ceil(log2(m));
-            min_bits = max_bits - 1;
-            n_values_with_min_bits = pow(2, max_bits) - m;
+            if (m != 0){
+                max_bits = ceil(log2(m));
+                min_bits = max_bits - 1;
+                n_values_with_min_bits = pow(2, max_bits) - m;
+            } else {
+                max_bits = 0;
+                min_bits = 0;
+                n_values_with_min_bits = 0;
+            }
         }
 
         // return array of strings based on golomb
@@ -127,49 +133,65 @@ class Golomb {
                 int count = 0;
                 //calculate possible remainders given m
                 calculateBits(m);
-                
                 while(i < encoded_string.length()) {
-                    int quotient = 0;
 
-                    while (encoded_string[i] == '0') {
-                        quotient++;
+                    // if (m_i == 0){
+                    //     result.push_back(0);
+                    //     i+=2;
+                    //     count++;
+                    //     if (count == block_size) {
+                    //         break;
+                    //     }
+                    // } else {
+
+                        int quotient = 0;
+
+                        while (encoded_string[i] == '0') {
+                            quotient++;
+                            i++;
+                        }
+                        // std::cout << quotient << " q---" << std::endl;
                         i++;
-                    }
+                        int remainder = 0;
+                        //remainder with min_bits
+                        int j = 0;
+                        std::string tmp = "";
+
+                        if (m != 1){
+                            while (j < min_bits) {
+                                tmp += encoded_string[i];
+                                i++;
+                                j++;
+                            }
+
+                            int res1 = bitStringToInt(tmp);
+
+                            if (res1 < n_values_with_min_bits) {
+                                remainder = res1;
+                            } else {
+                                tmp += encoded_string[i];
+                                i++;
+                                remainder = bitStringToInt(tmp) - n_values_with_min_bits;
+                            }
+                        } else {
+                            remainder = 0;
+                            i++;
+                        }
+                        // std::cout << remainder << " r---" << std::endl;
+
+                        //sign bit
+                        int res = quotient * m + remainder;
+                        if (encoded_string[i] == '1') {
+                            result.push_back(-(res));
+                        } else {
+                            result.push_back(res);
+                        }
+
+                        i++;
+                        count++;
+                        
+                        if (count == block_size) break;
                     
-                    i++;
-                    int remainder = 0;
-                    //remainder with min_bits
-                    int j = 0;
-                    std::string tmp = "";
-
-                    while (j < min_bits) {
-                        tmp += encoded_string[i];
-                        i++;
-                        j++;
-                    }
-
-                    int res1 = bitStringToInt(tmp);
-
-                    if (res1 < n_values_with_min_bits) {
-                        remainder = res1;
-                    } else {
-                        tmp += encoded_string[i];
-                        i++;
-                        remainder = bitStringToInt(tmp) - n_values_with_min_bits;
-                    }
-
-                    //sign bit
-                    int res = quotient * m + remainder;
-                    if (encoded_string[i] == '1') {
-                        result.push_back(-(res));
-                    } else {
-                        result.push_back(res);
-                    }
-
-                    i++;
-                    count++;
-                    
-                    if (count == block_size) break;
                 }
             }
             return result;
@@ -180,22 +202,29 @@ class Golomb {
             //calculate possible remainders given m
             calculateBits(m);
             std::string result = "";
-            int quotient = abs(num) / m;
-            int remainder = abs(num) % m;
-
+            int quotient = 0;
+            int remainder = 0;
+            if (m != 0){
+                quotient = abs(num) / m;
+                remainder = abs(num) % m;
+            }
             for (int i = 0; i < quotient; i++) {
                 result += "0";
             }
             
             result += "1";
-
-            if (remainder < n_values_with_min_bits) {
-                result += remaindersBitString(remainder, min_bits);
-            } else {
-                result += remaindersBitString(remainder + n_values_with_min_bits, max_bits);
+            if (m != 1){
+                if (remainder < n_values_with_min_bits) {
+                    result += remaindersBitString(remainder, min_bits);
+                } else {
+                    result += remaindersBitString(remainder + n_values_with_min_bits, max_bits);
+                }
+            }else{
+                result += "0";
             }
 
             num < 0 ? result += "1" : result += "0";
+
 
             return result;
         }

@@ -96,7 +96,7 @@ int main(int argc, char *argv[]) {
     vector<short> right_samples(nFrames);
 
     if(quantization){
-        cout << "quantization..." << endl;
+        // cout << "quantization..." << endl;
         for(int i = 0; i < samples.size(); i++){
             //remove the q least significant bits
             samples[i] = samples[i] >> q;
@@ -124,6 +124,7 @@ int main(int argc, char *argv[]) {
     vector<int> m_vector;
 
     vector<int> valuesToBeEncoded;
+    // cout << "Predicting..." << endl;
     if(nChannels < 2){
         for(int i = 0; i < samples.size(); i++) {
             if (i >= 3) {
@@ -152,7 +153,9 @@ int main(int argc, char *argv[]) {
                 }
                 int u = round(sum/bs);
                 m = calc_m(u);
+                if (m < 1) m = 1;
                 m_vector.push_back(m);
+                
             }
         }
 
@@ -173,16 +176,17 @@ int main(int argc, char *argv[]) {
                 }
                 int u = round(sum/bs);
                 m = calc_m(u);
+                if (m < 1) m = 1;
                 m_vector.push_back(m);
             }
         }
     }
-
     // //encode the values
 
-    
     string encodedString = "";
     Golomb g;
+
+    // cout << "Encoding ..." << endl;
 
     if (!autoMode){
         for(int i = 0; i < valuesToBeEncoded.size() ; i++) {
@@ -192,6 +196,7 @@ int main(int argc, char *argv[]) {
     else{
         int m_index = 0;
         for (int i = 0; i < valuesToBeEncoded.size(); i++) {
+            // cout << valuesToBeEncoded[i] << endl;
             if (i % bs == 0 && i != 0) {
                 m_index++;
                 if (m_index >= m_vector.size()) {
@@ -205,6 +210,9 @@ int main(int argc, char *argv[]) {
 
 
     //write the encoded string to a file
+
+    // cout << "Writing to file..." << endl;
+
     BitStream bitStream(output, "w");
 
     vector<int> bits;
@@ -222,7 +230,6 @@ int main(int argc, char *argv[]) {
         encoded_bits.push_back(0);
         count_zeros++;
     }
-
 
 
 
@@ -259,7 +266,6 @@ int main(int argc, char *argv[]) {
     for (int i = 15; i >= 0; i--){
         bits.push_back((m_vector.size() >> i) & 1);
     }
-    // cout << "m_size: " << m_vector.size() << endl;
 
     // the next bits will be the values of m_vector converted to binary
     for (int i = 0; i < m_vector.size(); i++) {

@@ -91,7 +91,7 @@ int main( int argc, char** argv ) {
         m_vector.push_back(m_i);
     }
 
-    int total = bs.getFileSize() - (12 + 2*m_size);
+    int total = bs.getFileSize() - (14 + 2*m_size);
     long totalBits = total*8;
     vector<int> v_encoded = bs.readBits(totalBits);
     //convert vector<int> of bits to string of bits
@@ -107,8 +107,10 @@ int main( int argc, char** argv ) {
     //decode looping through the v_m vector
     Golomb g;
     vector<int> decoded = g.decodeMultiple(encoded, m_vector, blockSize);
-
-
+    // for (int i = 0; i < decoded.size(); i++) {
+    //     cout << decoded[i] << endl;
+    // }
+    // cout << "Decoded size: " << decoded.size() << endl;
     vector<short> samplesVector;
 
     if(nChannels < 2){
