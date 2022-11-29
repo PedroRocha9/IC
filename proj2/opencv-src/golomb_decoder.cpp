@@ -83,6 +83,7 @@ int main( int argc, char** argv ) {
 
     vector<int> m_vector;
     for(int i = 0; i < m_size; i++) {
+        cout << "reading m" << endl;
         vector<int> v_m_i = bs.readBits(16);
         int m_i = 0;
         for(int j = 0; j < v_m_i.size(); j++) {
@@ -90,6 +91,7 @@ int main( int argc, char** argv ) {
         }
         m_vector.push_back(m_i);
     }
+    cout << "m_vector size: " << m_vector.size() << endl;
 
     int total = bs.getFileSize() - (14 + 2*m_size);
     long totalBits = total*8;
@@ -103,14 +105,20 @@ int main( int argc, char** argv ) {
     //discard the last num_zeros bits
     encoded = encoded.substr(0, encoded.size() - num_zeros);
 
-
+    cout << "encoded size: " << encoded.size() << endl;
     //decode looping through the v_m vector
     Golomb g;
-    vector<int> decoded = g.decodeMultiple(encoded, m_vector, blockSize);
+    vector<int> decoded;
+    if(m_size == 1) {
+        decoded = g.decode(encoded, m_vector[0]);
+    } else {
+        decoded = g.decodeMultiple(encoded, m_vector, blockSize);
+    }
+    
     // for (int i = 0; i < decoded.size(); i++) {
     //     cout << decoded[i] << endl;
     // }
-    // cout << "Decoded size: " << decoded.size() << endl;
+    cout << "Decoded size: " << decoded.size() << endl;
     vector<short> samplesVector;
 
     if(nChannels < 2){

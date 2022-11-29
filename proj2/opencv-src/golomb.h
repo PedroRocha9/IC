@@ -96,28 +96,36 @@ class Golomb {
                 int j = 0;
                 std::string tmp = "";
 
-                while (j < min_bits) {
-                    tmp += encoded_string[i];
-                    i++;
-                    j++;
-                }
+                if (m != 1){
+                    while (j < min_bits) {
+                        tmp += encoded_string[i];
+                        i++;
+                        j++;
+                    }
 
-                int res1 = bitStringToInt(tmp);
-                
-                if (res1 < n_values_with_min_bits) {
-                    remainder = res1;
+                    int res1 = bitStringToInt(tmp);
+
+                    if (res1 < n_values_with_min_bits) {
+                        remainder = res1;
+                    } else {
+                        tmp += encoded_string[i];
+                        i++;
+                        remainder = bitStringToInt(tmp) - n_values_with_min_bits;
+                    }
                 } else {
-                    tmp += encoded_string[i];
+                    remainder = 0;
                     i++;
-                    remainder = bitStringToInt(tmp) - n_values_with_min_bits;
                 }
+                // std::cout << remainder << " r---" << std::endl;
 
                 //sign bit
+                int res = quotient * m + remainder;
                 if (encoded_string[i] == '1') {
-                    result.push_back(-(quotient * m + remainder));
+                    result.push_back(-(res));
                 } else {
-                    result.push_back(quotient * m + remainder);
+                    result.push_back(res);
                 }
+
                 i++;
             }
 
@@ -134,18 +142,7 @@ class Golomb {
                 //calculate possible remainders given m
                 calculateBits(m);
                 while(i < encoded_string.length()) {
-
-                    // if (m_i == 0){
-                    //     result.push_back(0);
-                    //     i+=2;
-                    //     count++;
-                    //     if (count == block_size) {
-                    //         break;
-                    //     }
-                    // } else {
-
                         int quotient = 0;
-
                         while (encoded_string[i] == '0') {
                             quotient++;
                             i++;

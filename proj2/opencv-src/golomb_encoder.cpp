@@ -263,6 +263,11 @@ int main(int argc, char *argv[]) {
     // cout << "number of zeros added: " << count_zeros << endl;
 
     //the next 16 bits of the output file will be size of m_vector converted to binary
+    int m_vector_size = m_vector.size();
+    if (!autoMode){
+        m_vector.clear();
+        m_vector.push_back(og);
+    }   
     for (int i = 15; i >= 0; i--){
         bits.push_back((m_vector.size() >> i) & 1);
     }
@@ -271,6 +276,7 @@ int main(int argc, char *argv[]) {
     for (int i = 0; i < m_vector.size(); i++) {
         for (int j = 15; j >= 0; j--) {
             bits.push_back((m_vector[i] >> j) & 1);
+            cout << ((m_vector[i] >> j) & 1);
         }
     }
     
