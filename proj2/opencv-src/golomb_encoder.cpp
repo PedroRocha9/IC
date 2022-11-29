@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-    int q = 0;
+    int q = 1;
     //check if "auto" is passed in
     bool autoMode = false;
     bool quantization = false;
@@ -55,6 +55,11 @@ int main(int argc, char *argv[]) {
     if (argc == 6) {
         q = atoi(argv[5]);
         quantization = true;
+    }
+
+    if (q > 15 || q < 1) {
+        cerr << "[q] must be between 1 and 15\n";
+        return 1;
     }
 
     SndfileHandle sfhIn { argv[1] };
@@ -95,12 +100,16 @@ int main(int argc, char *argv[]) {
     vector<short> left_samples(nFrames);
     vector<short> right_samples(nFrames);
 
+
+	size_t nBlocks { static_cast<size_t>(ceil(static_cast<double>(nFrames) / bs)) };
+
+	// Do zero padding, if necessary
+	samples.resize(nBlocks * bs * nChannels);
+
     if(quantization){
-        // cout << "quantization..." << endl;
         for(int i = 0; i < samples.size(); i++){
             //remove the q least significant bits
             samples[i] = samples[i] >> q;
-            
         }
     }
 
@@ -111,15 +120,6 @@ int main(int argc, char *argv[]) {
             right_samples[i] = samples[i * nChannels + 1];
         }
     }
-
-	size_t nBlocks { static_cast<size_t>(ceil(static_cast<double>(nFrames) / bs)) };
-
-	// Do zero padding, if necessary
-	samples.resize(nBlocks * bs * nChannels);
-
-    //zero padding of left and right channels
-    left_samples.resize(nBlocks * bs);
-    right_samples.resize(nBlocks * bs);
 
     vector<int> m_vector;
 

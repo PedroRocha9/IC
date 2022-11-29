@@ -156,7 +156,7 @@ int main( int argc, char** argv ) {
 
 
     //quantize the samples
-    if (q != 0) {
+    if (q != 1) {
         
         for(int i = 0; i < samplesVector.size(); i++) {
             //shift the samples to the left by q bits 
