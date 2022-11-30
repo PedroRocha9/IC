@@ -24,30 +24,11 @@ using namespace cv;
 int main(int argc, char *argv[]){
 
     auto rgb2ycbcr = [](Mat img) {
-        // get the rgb values of the image's matrix and converts them to YCbCr
-        for (int i = 0; i < img.rows; i++) {
-            for (int j = 0; j < img.cols; j++) {
-                cv::Vec3b &pixel = img.at<cv::Vec3b>(i, j);
-                //print first pixel
-                if(i == 0 && j == 0) {
-                    // cout << "pixel: " << (int)pixel[0] << " " << (int)pixel[1] << " " << (int)pixel[2] << endl;
-                }
-
-                int y = (int) (0.299 * pixel[2] + 0.587 * pixel[1] + 0.114 * pixel[0]);
-                int cb = (int) (128 - 0.168736 * pixel[2] - 0.331264 * pixel[1] + 0.5 * pixel[0]);
-                int cr = (int) (128 + 0.5 * pixel[2] - 0.418688 * pixel[1] - 0.081312 * pixel[0]);
-
-                pixel[0] = y;
-                pixel[1] = cb;
-                pixel[2] = cr;
-                //print first pixel
-                if(i == 0 && j == 0) {
-                    // cout << "pixel: " << (int)pixel[0] << " " << (int)pixel[1] << " " << (int)pixel[2] << endl;
-                }
-            }
-        }
+        // convert to YCbCr
+        Mat ycbcr;
+        cvtColor(img, ycbcr, COLOR_BGR2YCrCb);
+        return ycbcr;
     };
-
     //function that calculates average of 3 numbers
     auto average = [](int a, int b, int c) {
         return (a + b + c) / 3;
@@ -64,61 +45,253 @@ int main(int argc, char *argv[]){
 
     // check if the number of arguments is correct
     if(argc < 4 || argc > 5) {
-        cerr << "Usage: " << argv[0] << " <input file> <output file> <m (must not use auto!) | bs (must use auto!)> [auto]\n";
+        cerr << "Usage: " << argv[0] << " <input file> <output file> <m(must not use auto!)> [auto]\n";
         return 1;
     }
     
     //check if "auto" is passed in
     bool autoMode = false;
+    short m = 0;
+    int bs = 0;
+    short original = 0;
+    string output = argv[2];
+    // read the image
+    Mat img = imread(argv[1]);
     if (argc == 5) {
         if (strcmp(argv[4], "auto") == 0) {
             autoMode = true;
         }
-    }
-    short m = atoi(argv[3]);
-    int bs = m;
+        m = atoi(argv[3]);
+        original = m;
+        bs = m;
 
-    // read the image
-    Mat img = imread(argv[1]);
+    } else if (argc == 4) {
+        if (strcmp(argv[3], "auto") == 0) {
+            autoMode = true;
+        }
+        //bs = half the number of columns of the image
+        bs = img.cols;
+    }
+    
     // check if the image is loaded
     if (img.empty()){
-        // cout << "Could not load image: " << argv[1] << endl;
+        cout << "Could not load image: " << argv[1] << endl;
         return -1;
     }
 
-    // convert the image to YCbCr
-    rgb2ycbcr(img);
+    //save image type
+    int type = img.type();
 
-    //function that predicts the next value in the sequence based on 3 previous values
-    auto predict = [](int a, int b, int c) {
-        //3*a - 3*b + c
-        return 3*a - 3*b + c;
-    };
+     // convert the image to YCbCr
+    img = rgb2ycbcr(img);
 
-    vector<int> m_vector;
-    vector<int> valuesToBeEncoded;
+    vector<int> Ym_vector;
+    vector<int> Cbm_vector;
+    vector<int> Crm_vector;
+    vector<int> YvaluesToBeEncoded;
+    vector<int> CbvaluesToBeEncoded;
+    vector<int> CrvaluesToBeEncoded;
     
-    //print the first pixel of the img
-    // cout << "First pixel: " << img.at<cv::Vec3b>(0, 0) << endl;
+    int pixel_index = 0;
 
-    if (img.rows == 1){   
-        for(int i = 0; i < img.rows; i++) {
-            for(int j=0; j < img.cols; j++){
-                //int prediction = predict(img[i,j], 0, 0);
-                // int m = m - prediction;
-                // m_vector.push_back(m);
-                // valuesToBeEncoded.push_back(m);
+    // for each pixel in the image
+    for (int i = 0; i < img.rows; i++) {
+        for (int j = 0; j < img.cols; j++) {
+            // get the pixel value
+            int Y = img.at<Vec3b>(i,j)[0];
+            int Cb = img.at<Vec3b>(i,j)[1];
+            int Cr = img.at<Vec3b>(i,j)[2];
+
+            //if its the first pixel of the image, do not use prediction
+            if (i == 0 && j == 0) {
+                YvaluesToBeEncoded.push_back(Y);
+                CbvaluesToBeEncoded.push_back(Cb);
+                CrvaluesToBeEncoded.push_back(Cr);
+                pixel_index++;
+            } else if(i==0){
+                //if its the first line of the image, use only the previous pixel (to the left)
+                int Yerror = Y - img.at<Vec3b>(i,j-1)[0];
+                int Cberror = Cb - img.at<Vec3b>(i,j-1)[1];
+                int Crerror = Cr - img.at<Vec3b>(i,j-1)[2];
+                YvaluesToBeEncoded.push_back(Yerror);
+                CbvaluesToBeEncoded.push_back(Cberror);
+                CrvaluesToBeEncoded.push_back(Crerror);
+                pixel_index++;
+            }else if(j==0){
+                //if its the first pixel of the line, use only the pixel above
+                int Yerror = Y - img.at<Vec3b>(i-1,j)[0];
+                int Cberror = Cb - img.at<Vec3b>(i-1,j)[1];
+                int Crerror = Cr - img.at<Vec3b>(i-1,j)[2];
+                YvaluesToBeEncoded.push_back(Yerror);
+                CbvaluesToBeEncoded.push_back(Cberror);
+                CrvaluesToBeEncoded.push_back(Crerror);
+                pixel_index++;
+            } else {
+                //if its not the first pixel of the image nor the first line, use the 3 pixels to the left, above and to the left top
+                int Yerror = Y - average(img.at<Vec3b>(i,j-1)[0], img.at<Vec3b>(i-1,j)[0], img.at<Vec3b>(i-1,j-1)[0]);
+                int Cberror = Cb - average(img.at<Vec3b>(i,j-1)[1], img.at<Vec3b>(i-1,j)[1], img.at<Vec3b>(i-1,j-1)[1]);
+                int Crerror = Cr - average(img.at<Vec3b>(i,j-1)[2], img.at<Vec3b>(i-1,j)[2], img.at<Vec3b>(i-1,j-1)[2]);
+                YvaluesToBeEncoded.push_back(Yerror);
+                CbvaluesToBeEncoded.push_back(Cberror);
+                CrvaluesToBeEncoded.push_back(Crerror);
+                pixel_index++;
+            }
+
+            if(autoMode && pixel_index % bs == 0 && pixel_index != 0) {
+                int Ysum = 0;
+                int Cbsum = 0;
+                int Crsum = 0;
+                for(int j = pixel_index - bs; j < pixel_index; j++) {
+                    Ysum += abs(YvaluesToBeEncoded[j]);
+                    Cbsum += abs(CbvaluesToBeEncoded[j]);
+                    Crsum += abs(CrvaluesToBeEncoded[j]);
+                }
+                int Yu = round(Ysum / bs);
+                int Cbu = round(Cbsum / bs);
+                int Cru = round(Crsum / bs);
+                int Ym = calc_m(Yu);
+                int Cbm = calc_m(Cbu);
+                int Crm = calc_m(Cru);
+                if (Ym < 1) Ym = 1;
+                if (Cbm < 1) Cbm = 1;
+                if (Crm < 1) Crm = 1;
+                Ym_vector.push_back(Ym);
+                Cbm_vector.push_back(Cbm);
+                Crm_vector.push_back(Crm);
             }
         }
     }
+
+    string YencodedString = "";
+    string CbencodedString = "";
+    string CrencodedString = "";
+    Golomb g;
+
+    //size = rows * cols
+    int size = img.rows * img.cols;
+
+    if(!autoMode){
+        for(int i = 0; i < size; i++) {
+            YencodedString += g.encode(YvaluesToBeEncoded[i], original);
+        }
+        for(int i = 0; i < size; i++) {
+            CbencodedString += g.encode(CbvaluesToBeEncoded[i], original);
+        }
+        for(int i = 0; i < size; i++) {
+            CrencodedString += g.encode(CrvaluesToBeEncoded[i], original);
+        }
+    } else {
+        int m_index = 0;
+        for(int i = 0; i < size; i++) {
+            if(i % bs == 0 && i != 0) {
+                m_index++;
+            }
+            YencodedString += g.encode(YvaluesToBeEncoded[i], Ym_vector[m_index]);
+            CbencodedString += g.encode(CbvaluesToBeEncoded[i], Cbm_vector[m_index]);
+            CrencodedString += g.encode(CrvaluesToBeEncoded[i], Crm_vector[m_index]);
+        }
+    }
+
+    if(!autoMode){
+        Ym_vector.clear();
+        Cbm_vector.clear();
+        Crm_vector.clear();
+        Ym_vector.push_back(original);
+        Cbm_vector.push_back(original);
+        Crm_vector.push_back(original);
+    }
+
+    BitStream bitStream(output, "w");
+
+    //write the header
+    vector<int> bits;
+
+    //the first 16 bits are the image type
+    for(int i = 31; i >= 0; i--) {
+        bits.push_back((type >> i) & 1);
+    }
     
+    //the next 16 bits are the image width
+    for(int i = 15; i >= 0; i--) {
+        bits.push_back((img.cols >> i) & 1);
+    }
+    //the next 16 bits are the image height
+    for(int i = 15; i >= 0; i--) {
+        bits.push_back((img.rows >> i) & 1);
+    }
+    //the next 16 bits are the block size
+    for(int i = 15; i >= 0; i--) {
+        bits.push_back((bs >> i) & 1);
+    }
+
+    //the next 16 bits are the YencodedString size
+    for(int i = 31; i >= 0; i--) {
+        bits.push_back((YencodedString.size() >> i) & 1);
+    }
+    //the next 16 bits are the CbencodedString size
+    for(int i = 31; i >= 0; i--) {
+        bits.push_back((CbencodedString.size() >> i) & 1);
+    }
+    
+    //the next 32 bits are the CrencodedString size
+    for(int i = 31; i >= 0; i--) {
+        bits.push_back((CrencodedString.size() >> i) & 1);
+    }
+    //the next 16 bits are the m_vector size
+    for(int i = 15; i >= 0; i--) {
+        bits.push_back((Ym_vector.size() >> i) & 1);
+    }
+
+    //the next bits are the Ym_vector values (16 bits each)
+    //TODO possible representation with only 8 bits (or even 4)
+    for(int i = 0; i < Ym_vector.size(); i++) {
+        for(int j = 15; j >= 0; j--) {
+            bits.push_back((Ym_vector[i] >> j) & 1);
+        }
+    }
+    //the next bits are the Cbm_vector values (16 bits each)
+    //TODO possible representation with only 8 bits (or even 4)
+    for(int i = 0; i < Cbm_vector.size(); i++) {
+        for(int j = 15; j >= 0; j--) {
+            bits.push_back((Cbm_vector[i] >> j) & 1);
+        }
+    }
+    //the next bits are the Crm_vector values (16 bits each)
+    //TODO possible representation with only 8 bits (or even 4)
+    for(int i = 0; i < Crm_vector.size(); i++) {
+        for(int j = 15; j >= 0; j--) {
+            bits.push_back((Crm_vector[i] >> j) & 1);
+        }
+    }
+
+    //contains all the bits from the values to be encoded vectors (Y, Cb, Cr)
+    vector<int> encoded_bits;
+
+    for(int i = 0; i < YencodedString.length(); i++) {
+        encoded_bits.push_back(YencodedString[i] - '0');
+    }
+    for(int i = 0; i < CbencodedString.length(); i++) {
+        encoded_bits.push_back(CbencodedString[i] - '0');
+    }
+    for(int i = 0; i < CrencodedString.length(); i++) {
+        encoded_bits.push_back(CrencodedString[i] - '0');
+    }
+
+    //the next bits are the encoded bits
+    for(int i = 0; i < encoded_bits.size(); i++) {
+        bits.push_back(encoded_bits[i]);
+    }
+
+    //write the bits to the file
+    bitStream.writeBits(bits);
+    bitStream.close();
+    
+
     //end the timer
     clock_t end = clock();
-
     double elapsed_secs = double(end - start) / CLOCKS_PER_SEC;
-    //convert the time to milliseconds
     elapsed_secs = elapsed_secs * 1000;
-    // cout << "Execution time: " << elapsed_secs << " ms" << endl;
+    cout << "Execution time: " << elapsed_secs << " ms" << endl;
  
     return 0;
 }
