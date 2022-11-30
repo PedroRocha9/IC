@@ -4,7 +4,7 @@ project(sndfile-example)
 SET (CMAKE_BUILD_TYPE "Release")
 #SET (CMAKE_BUILD_TYPE "Debug")
 
-SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -std=c++17")
+SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -lm -std=c++17")
 SET (CMAKE_CXX_FLAGS_RELEASE "-O3")
 SET (CMAKE_CXX_FLAGS_DEBUG "-g3 -fsanitize=address")
 

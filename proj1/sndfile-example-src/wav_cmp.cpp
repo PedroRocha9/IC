@@ -2,6 +2,7 @@
 #include <vector>
 #include <sndfile.hh>
 #include <cmath>
+#include <math.h>
 
 using namespace std;
 
@@ -58,7 +59,7 @@ int main(int argc, char *argv[]) {
 
     size_t nFrames;
     double energy_signal { 0 };
-    double energy_noise { 0 };
+    double energy_noise { 0};
     double max_error { 0 };
     double snr { 0 };
 
@@ -69,10 +70,10 @@ int main(int argc, char *argv[]) {
         samples_f2.resize(nFrames * sfhIn2.channels());
 
         for (long unsigned int i = 0; i < samples_f1.size(); i++) {
-            energy_signal += abs(samples_f1[i])^2;
-            energy_noise += abs(samples_f1[i] - samples_f2[i])^2;
+            energy_signal += pow(abs(samples_f1[i]), 2);
+            energy_noise += pow((samples_f1[i] - samples_f2[i]), 2);
             max_error = abs(samples_f1[i] - samples_f2[i]) > max_error ? abs(samples_f1[i] - samples_f2[i]) : max_error;
-        }    
+        }
     }
 
     snr = 10 * log10(energy_signal / energy_noise);

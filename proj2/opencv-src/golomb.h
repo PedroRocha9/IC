@@ -194,7 +194,6 @@ class Golomb {
             return result;
         }
 
-
         std::string encode(int num, int m){
             //calculate possible remainders given m
             calculateBits(m);
@@ -208,7 +207,7 @@ class Golomb {
             for (int i = 0; i < quotient; i++) {
                 result += "0";
             }
-            
+
             result += "1";
             if (m != 1){
                 if (remainder < n_values_with_min_bits) {
