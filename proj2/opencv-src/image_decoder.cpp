@@ -25,6 +25,49 @@ int main(int argc, char *argv[]){
         return rgb;
     };
 
+    auto predict = [](int a, int b, int c, int mode){
+        // with a switch case, we can choose the prediction mode
+        //mode = 0 -> average
+        //mode = 1 -> left
+        //mode = 2 -> above
+        //mode = 3 -> left top
+        //mode = 4 -> left + above - left top
+        //mode = 5 -> left + (above - left top) / 2
+        //mode = 6 -> above + (left - left top) / 2
+        //mode = 7 -> left + above / 2
+        //mode = 8 -> non linear prediction:
+        //min(left, above) if  left top >= max(left, above)
+        //max(left, above) if  left top <= min(left, above)
+        //otherwise, left + above - left top
+
+        switch(mode){
+            case 0:
+                return (a + b + c) / 3;
+            case 1:
+                return a;
+            case 2:
+                return b;
+            case 3:
+                return c;
+            case 4:
+                return a + b - c;
+            case 5:
+                return a + (b - c) / 2;
+            case 6:
+                return b + (a - c) / 2;
+            case 7:
+                return (a + b) / 2;
+            case 8:
+                if (c >= max(a, b))
+                    return min(a, b);
+                else if (c <= min(a, b))
+                    return max(a, b);
+                else
+                    return a + b - c;
+        }
+
+    };
+
     //start a timer
     clock_t start = clock();
 
@@ -38,6 +81,7 @@ int main(int argc, char *argv[]){
     string output = argv[2];
 
     vector<int> v_imgtype = bs.readBits(32);
+    vector<int> v_mode = bs.readBits(16);
     vector<int> v_imgwidth = bs.readBits(16);
     vector<int> v_imgheight = bs.readBits(16);
     vector<int> v_bs = bs.readBits(16);
@@ -49,6 +93,11 @@ int main(int argc, char *argv[]){
     int imgtype = 0;
     for(int i = 0; i < v_imgtype.size(); i++) {
         imgtype += v_imgtype[i] * pow(2, v_imgtype.size() - i - 1);
+    }
+
+    int mode = 0;
+    for(int i = 0; i < v_mode.size(); i++) {
+        mode += v_mode[i] * pow(2, v_mode.size() - i - 1);
     }
 
     int imgwidth = 0;
@@ -174,9 +223,9 @@ int main(int argc, char *argv[]){
                 pixel_idx++;
             } else {
                 //if its not the first pixel of the image nor the first line, use the 3 pixels to the left, above and to the left top
-                int Y = average(new_image.at<Vec3b>(i, j-1)[0], new_image.at<Vec3b>(i-1, j)[0], new_image.at<Vec3b>(i-1, j-1)[0]) + Ydecoded[pixel_idx];
-                int Cb = average(new_image.at<Vec3b>(i, j-1)[1], new_image.at<Vec3b>(i-1, j)[1], new_image.at<Vec3b>(i-1, j-1)[1]) + Cbdecoded[pixel_idx];
-                int Cr = average(new_image.at<Vec3b>(i, j-1)[2], new_image.at<Vec3b>(i-1, j)[2], new_image.at<Vec3b>(i-1, j-1)[2]) + Crdecoded[pixel_idx];
+                int Y = int(predict(new_image.at<Vec3b>(i, j-1)[0], new_image.at<Vec3b>(i-1, j)[0], new_image.at<Vec3b>(i-1, j-1)[0], mode)) + Ydecoded[pixel_idx];
+                int Cb = int(predict(new_image.at<Vec3b>(i, j-1)[1], new_image.at<Vec3b>(i-1, j)[1], new_image.at<Vec3b>(i-1, j-1)[1], mode)) + Cbdecoded[pixel_idx];
+                int Cr = int(predict(new_image.at<Vec3b>(i, j-1)[2], new_image.at<Vec3b>(i-1, j)[2], new_image.at<Vec3b>(i-1, j-1)[2], mode)) + Crdecoded[pixel_idx];
                 new_image.at<Vec3b>(i, j) = Vec3b(Y, Cb, Cr);
                 pixel_idx++;
             }

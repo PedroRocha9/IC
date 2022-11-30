@@ -11,7 +11,7 @@
 using namespace std;
 using namespace cv;
 
-//function that calculates the prediction of the next value in the sequence based on 3 values -> pixels to the left, above and to the left top
+//function that calculates the prediction of the next value in the sequence based on <3> values -> pixels to the left, above and to the left top
 // if the matrix it's in the first row of the matrix, use only the previous pixel (to the left)
 // if it's the first pixel of the matrix, do not use prediction obviously
  
@@ -29,10 +29,6 @@ int main(int argc, char *argv[]){
         cvtColor(img, ycbcr, COLOR_BGR2YCrCb);
         return ycbcr;
     };
-    //function that calculates average of 3 numbers
-    auto average = [](int a, int b, int c) {
-        return (a + b + c) / 3;
-    };
     //function to calculate m based on u
     auto calc_m = [](int u) {
         //u = alpha / 1 - alpha
@@ -40,36 +36,96 @@ int main(int argc, char *argv[]){
         return (int) - (1/log((double) u / (1 + u)));
     };
 
+    auto predict = [](int a, int b, int c, int mode){
+        // with a switch case, we can choose the prediction mode
+        //mode = 0 -> average
+        //mode = 1 -> left
+        //mode = 2 -> above
+        //mode = 3 -> left top
+        //mode = 4 -> left + above - left top
+        //mode = 5 -> left + (above - left top) / 2
+        //mode = 6 -> above + (left - left top) / 2
+        //mode = 7 -> left + above / 2
+        //mode = 8 -> non linear prediction:
+        //min(left, above) if  left top >= max(left, above)
+        //max(left, above) if  left top <= min(left, above)
+        //otherwise, left + above - left top
+
+        switch(mode){
+            case 0:
+                return (a + b + c) / 3;
+            case 1:
+                return a;
+            case 2:
+                return b;
+            case 3:
+                return c;
+            case 4:
+                return a + b - c;
+            case 5:
+                return a + (b - c) / 2;
+            case 6:
+                return b + (a - c) / 2;
+            case 7:
+                return (a + b) / 2;
+            case 8:
+                if (c >= max(a, b))
+                    return min(a, b);
+                else if (c <= min(a, b))
+                    return max(a, b);
+                else
+                    return a + b - c;
+        }
+
+    };
+
     //start a timer
     clock_t start = clock();
 
-    // check if the number of arguments is correct
-    if(argc < 4 || argc > 5) {
-        cerr << "Usage: " << argv[0] << " <input file> <output file> <m(must not use auto!)> [auto]\n";
-        return 1;
-    }
-    
-    //check if "auto" is passed in
+    int mode = 8;
     bool autoMode = false;
     short m = 0;
     int bs = 0;
     short original = 0;
+
+    // check if the number of arguments is correct
+    if(argc < 3 || argc > 6) {
+        cerr << "Usage: " << argv[0] << " <input file> <output file> [bs (multiple of the width)] [mode] [auto] \n";
+        return 1;
+    }
+
+    if(strcmp(argv[argc-1], "auto") == 0){
+        autoMode = true;
+        if(argc == 6){
+            bs = atoi(argv[3]);
+            mode = atoi(argv[4]);
+        }
+        else if(argc == 5){
+            mode = atoi(argv[3]);
+        }
+    }
+    else{
+        if(argc == 5){
+            bs = atoi(argv[3]);
+            mode = atoi(argv[4]);
+        }
+        else if(argc == 4){
+            mode = atoi(argv[3]);
+        }
+    }
+        
+    //check if "auto" is passed in
+    
     string output = argv[2];
     // read the image
     Mat img = imread(argv[1]);
-    if (argc == 5) {
-        if (strcmp(argv[4], "auto") == 0) {
-            autoMode = true;
-        }
-        m = atoi(argv[3]);
-        original = m;
-        bs = m;
 
-    } else if (argc == 4) {
-        if (strcmp(argv[3], "auto") == 0) {
-            autoMode = true;
+    if(bs != 0){
+        if(bs % img.cols != 0){
+            cerr << "Error: bs must be a multiple of the width of the image" << endl;
+            return 1;
         }
-        //bs = half the number of columns of the image
+    } else {
         bs = img.cols;
     }
     
@@ -84,6 +140,8 @@ int main(int argc, char *argv[]){
 
      // convert the image to YCbCr
     img = rgb2ycbcr(img);
+
+    
 
     vector<int> Ym_vector;
     vector<int> Cbm_vector;
@@ -128,9 +186,9 @@ int main(int argc, char *argv[]){
                 pixel_index++;
             } else {
                 //if its not the first pixel of the image nor the first line, use the 3 pixels to the left, above and to the left top
-                int Yerror = Y - average(img.at<Vec3b>(i,j-1)[0], img.at<Vec3b>(i-1,j)[0], img.at<Vec3b>(i-1,j-1)[0]);
-                int Cberror = Cb - average(img.at<Vec3b>(i,j-1)[1], img.at<Vec3b>(i-1,j)[1], img.at<Vec3b>(i-1,j-1)[1]);
-                int Crerror = Cr - average(img.at<Vec3b>(i,j-1)[2], img.at<Vec3b>(i-1,j)[2], img.at<Vec3b>(i-1,j-1)[2]);
+                int Yerror = Y - int(predict(img.at<Vec3b>(i,j-1)[0], img.at<Vec3b>(i-1,j)[0], img.at<Vec3b>(i-1,j-1)[0], mode));
+                int Cberror = Cb - int(predict(img.at<Vec3b>(i,j-1)[1], img.at<Vec3b>(i-1,j)[1], img.at<Vec3b>(i-1,j-1)[1], mode));
+                int Crerror = Cr - int(predict(img.at<Vec3b>(i,j-1)[2], img.at<Vec3b>(i-1,j)[2], img.at<Vec3b>(i-1,j-1)[2], mode));
                 YvaluesToBeEncoded.push_back(Yerror);
                 CbvaluesToBeEncoded.push_back(Cberror);
                 CrvaluesToBeEncoded.push_back(Crerror);
@@ -209,6 +267,11 @@ int main(int argc, char *argv[]){
     //the first 16 bits are the image type
     for(int i = 31; i >= 0; i--) {
         bits.push_back((type >> i) & 1);
+    }
+
+    //the next 16 bits are the mode
+    for(int i = 15; i >= 0; i--){
+        bits.push_back((mode >> i) & 1);
     }
     
     //the next 16 bits are the image width
