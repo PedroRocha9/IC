@@ -104,6 +104,17 @@ def decoder(d, idx):
         subprocess.call(f'rm {i}', shell=True)
         subprocess.call(f'rm {i}.wav', shell=True)
 
+    d.write('\n\nSNR:\n')
+
+    for audio in AUDIO_FILES:
+        d.write(audio + '\n')
+        for q in QUANT_VALUES:
+            subprocess.check_output(f'../../proj1/sndfile-example-bin/wav_quant {audio} {16-q} x.wav', shell=True)
+            snr = subprocess.check_output(f'../../proj1/sndfile-example-bin/wav_cmp {audio} x.wav', shell=True)
+            d.write(f'{snr.decode("utf-8").split(" ")[1]}\n')
+
+        subprocess.call(f'rm x.wav', shell=True)
+    
     return idx
 
 
