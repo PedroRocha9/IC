@@ -15,13 +15,12 @@ using namespace cv;
 // if the matrix it's in the first row of the matrix, use only the previous pixel (to the left)
 // if it's the first pixel of the matrix, do not use prediction obviously
  
-
 // jpeg type of prediction using YCbCr to YCbCr (opencv converts rgb to YCbCr) 
 // when having only 1 line of pixels, predict based on the previous pixel (to the left), like a jpeg encoder
 // there's always 3 channels/spaces in the image --> não entendi bem isto xD é Y, Cb e Cr?
 // Predict the pixel value based on the pixel value above it, to the left of it and to the left top of it
 
-int main(int argc, char *argv[]){
+int main(int argc, char *argv[]) {
 
     auto rgb2ycbcr = [](Mat img) {
         // convert to YCbCr
@@ -29,6 +28,7 @@ int main(int argc, char *argv[]){
         cvtColor(img, ycbcr, COLOR_BGR2YCrCb);
         return ycbcr;
     };
+
     //function to calculate m based on u
     auto calc_m = [](int u) {
         //u = alpha / 1 - alpha
@@ -36,7 +36,7 @@ int main(int argc, char *argv[]){
         return (int) - (1/log((double) u / (1 + u)));
     };
 
-    auto predict = [](int a, int b, int c, int mode){
+    auto predict = [](int a, int b, int c, int mode) {
         // with a switch case, we can choose the prediction mode
         //mode = 0 -> average
         //mode = 1 -> left
@@ -51,7 +51,7 @@ int main(int argc, char *argv[]){
         //max(left, above) if  left top <= min(left, above)
         //otherwise, left + above - left top
 
-        switch(mode){
+        switch(mode) {
             case 0:
                 return (a + b + c) / 3;
             case 1:
@@ -76,7 +76,7 @@ int main(int argc, char *argv[]){
                 else
                     return a + b - c;
         }
-
+        return 0;
     };
 
     //start a timer
@@ -84,44 +84,39 @@ int main(int argc, char *argv[]){
 
     int mode = 8;
     bool autoMode = false;
-    short m = 0;
     int bs = 0;
     short original = 0;
 
     // check if the number of arguments is correct
-    if(argc < 3 || argc > 6) {
+    if (argc < 3 || argc > 6) {
         cerr << "Usage: " << argv[0] << " <input file> <output file> [bs (multiple of the width)] [mode] [auto] \n";
         return 1;
     }
 
-    if(strcmp(argv[argc-1], "auto") == 0){
+    if (strcmp(argv[argc-1], "auto") == 0) {
         autoMode = true;
-        if(argc == 6){
+        if (argc == 6) {
             bs = atoi(argv[3]);
             mode = atoi(argv[4]);
-        }
-        else if(argc == 5){
+        } else if(argc == 5) {
             mode = atoi(argv[3]);
         }
-    }
-    else{
-        if(argc == 5){
+    } else {
+        if (argc == 5) {
             bs = atoi(argv[3]);
             mode = atoi(argv[4]);
-        }
-        else if(argc == 4){
+        } else if (argc == 4) {
             mode = atoi(argv[3]);
         }
     }
         
     //check if "auto" is passed in
-    
     string output = argv[2];
     // read the image
     Mat img = imread(argv[1]);
 
-    if(bs != 0){
-        if(bs % img.cols != 0){
+    if (bs != 0) {
+        if (bs % img.cols != 0) {
             cerr << "Error: bs must be a multiple of the width of the image" << endl;
             return 1;
         }
@@ -130,7 +125,7 @@ int main(int argc, char *argv[]){
     }
     
     // check if the image is loaded
-    if (img.empty()){
+    if (img.empty()) {
         cout << "Could not load image: " << argv[1] << endl;
         return -1;
     }
@@ -240,17 +235,15 @@ int main(int argc, char *argv[]){
         }
     } else {
         int m_index = 0;
-        for(int i = 0; i < size; i++) {
-            if(i % bs == 0 && i != 0) {
-                m_index++;
-            }
+        for (int i = 0; i < size; i++) {
+            if (i % bs == 0 && i != 0) m_index++;
             YencodedString += g.encode(YvaluesToBeEncoded[i], Ym_vector[m_index]);
             CbencodedString += g.encode(CbvaluesToBeEncoded[i], Cbm_vector[m_index]);
             CrencodedString += g.encode(CrvaluesToBeEncoded[i], Crm_vector[m_index]);
         }
     }
 
-    if(!autoMode){
+    if (!autoMode) {
         Ym_vector.clear();
         Cbm_vector.clear();
         Crm_vector.clear();
@@ -265,64 +258,61 @@ int main(int argc, char *argv[]){
     vector<int> bits;
 
     //the first 16 bits are the image type
-    for(int i = 31; i >= 0; i--) {
+    for (int i = 31; i >= 0; i--)
         bits.push_back((type >> i) & 1);
-    }
 
     //the next 16 bits are the mode
-    for(int i = 15; i >= 0; i--){
+    for (int i = 15; i >= 0; i--)
         bits.push_back((mode >> i) & 1);
-    }
     
     //the next 16 bits are the image width
-    for(int i = 15; i >= 0; i--) {
+    for (int i = 15; i >= 0; i--)
         bits.push_back((img.cols >> i) & 1);
-    }
+
     //the next 16 bits are the image height
-    for(int i = 15; i >= 0; i--) {
+    for (int i = 15; i >= 0; i--)
         bits.push_back((img.rows >> i) & 1);
-    }
+    
     //the next 16 bits are the block size
-    for(int i = 15; i >= 0; i--) {
+    for (int i = 15; i >= 0; i--)
         bits.push_back((bs >> i) & 1);
-    }
 
     //the next 16 bits are the YencodedString size
-    for(int i = 31; i >= 0; i--) {
+    for (int i = 31; i >= 0; i--)
         bits.push_back((YencodedString.size() >> i) & 1);
-    }
+
     //the next 16 bits are the CbencodedString size
-    for(int i = 31; i >= 0; i--) {
+    for (int i = 31; i >= 0; i--)
         bits.push_back((CbencodedString.size() >> i) & 1);
-    }
     
     //the next 32 bits are the CrencodedString size
-    for(int i = 31; i >= 0; i--) {
+    for (int i = 31; i >= 0; i--)
         bits.push_back((CrencodedString.size() >> i) & 1);
-    }
+    
     //the next 16 bits are the m_vector size
-    for(int i = 15; i >= 0; i--) {
+    for (int i = 15; i >= 0; i--)
         bits.push_back((Ym_vector.size() >> i) & 1);
-    }
 
     //the next bits are the Ym_vector values (16 bits each)
     //TODO possible representation with only 8 bits (or even 4)
-    for(int i = 0; i < Ym_vector.size(); i++) {
-        for(int j = 15; j >= 0; j--) {
+    for (long unsigned int i = 0; i < Ym_vector.size(); i++) {
+        for (int j = 15; j >= 0; j--) {
             bits.push_back((Ym_vector[i] >> j) & 1);
         }
     }
+    
     //the next bits are the Cbm_vector values (16 bits each)
     //TODO possible representation with only 8 bits (or even 4)
-    for(int i = 0; i < Cbm_vector.size(); i++) {
-        for(int j = 15; j >= 0; j--) {
+    for (long unsigned int i = 0; i < Cbm_vector.size(); i++) {
+        for (int j = 15; j >= 0; j--) {
             bits.push_back((Cbm_vector[i] >> j) & 1);
         }
     }
+
     //the next bits are the Crm_vector values (16 bits each)
     //TODO possible representation with only 8 bits (or even 4)
-    for(int i = 0; i < Crm_vector.size(); i++) {
-        for(int j = 15; j >= 0; j--) {
+    for (long unsigned int i = 0; i < Crm_vector.size(); i++) {
+        for (int j = 15; j >= 0; j--) {
             bits.push_back((Crm_vector[i] >> j) & 1);
         }
     }
@@ -330,20 +320,18 @@ int main(int argc, char *argv[]){
     //contains all the bits from the values to be encoded vectors (Y, Cb, Cr)
     vector<int> encoded_bits;
 
-    for(int i = 0; i < YencodedString.length(); i++) {
+    for (long unsigned int i = 0; i < YencodedString.length(); i++)
         encoded_bits.push_back(YencodedString[i] - '0');
-    }
-    for(int i = 0; i < CbencodedString.length(); i++) {
+
+    for (long unsigned int i = 0; i < CbencodedString.length(); i++)
         encoded_bits.push_back(CbencodedString[i] - '0');
-    }
-    for(int i = 0; i < CrencodedString.length(); i++) {
+    
+    for (long unsigned int i = 0; i < CrencodedString.length(); i++)
         encoded_bits.push_back(CrencodedString[i] - '0');
-    }
 
     //the next bits are the encoded bits
-    for(int i = 0; i < encoded_bits.size(); i++) {
+    for (long unsigned int i = 0; i < encoded_bits.size(); i++)
         bits.push_back(encoded_bits[i]);
-    }
 
     //write the bits to the file
     bitStream.writeBits(bits);
