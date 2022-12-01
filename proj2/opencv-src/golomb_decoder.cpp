@@ -34,6 +34,7 @@ int main( int argc, char** argv ) {
     BitStream bs (argv[1], "r");
 
     vector<int> v_channels = bs.readBits(16);
+    vector<int> v_padding = bs.readBits(16);
     vector<int> v_q = bs.readBits(16);
     vector<int> v_nFrames = bs.readBits(32);
     vector<int> v_blockSize = bs.readBits(16);
@@ -43,6 +44,11 @@ int main( int argc, char** argv ) {
     int nChannels = 0;
     for(int i = 0; i < v_channels.size(); i++) {
         nChannels += v_channels[i] * pow(2, v_channels.size() - i - 1);
+    }
+
+    int padding = 0;
+    for(int i = 0; i < v_padding.size(); i++) {
+        padding += v_padding[i] * pow(2, v_padding.size() - i - 1);
     }
 
     int q = 0;
@@ -69,7 +75,7 @@ int main( int argc, char** argv ) {
     for(int i = 0; i < v_blockSize.size(); i++) {
         blockSize += v_blockSize[i] * pow(2, v_blockSize.size() - i - 1);
     }
-    
+
 
     int num_zeros = 0;
     for(int i = 0; i < v_num_zeros.size(); i++) {
@@ -91,7 +97,12 @@ int main( int argc, char** argv ) {
         m_vector.push_back(m_i);
     }
 
-    int total = bs.getFileSize() - (14 + 2*m_size);
+    // cout << "m_vector size: " << m_vector.size() << endl;
+    // for (int i = 0; i < m_vector.size(); i++) {
+    //     cout << m_vector[i] << endl;
+    // }
+
+    int total = bs.getFileSize() - (16 + 2*m_size);
     long totalBits = total*8;
     vector<int> v_encoded = bs.readBits(totalBits);
     //convert vector<int> of bits to string of bits
@@ -111,6 +122,10 @@ int main( int argc, char** argv ) {
     } else {
         decoded = g.decodeMultiple(encoded, m_vector, blockSize);
     }
+
+    // for(int i = 0; i < 10000; i++) {
+    //     cout << decoded[i] << endl;
+    // }
     
     // for (int i = 0; i < decoded.size(); i++) {
     //     cout << decoded[i] << endl;
@@ -163,14 +178,24 @@ int main( int argc, char** argv ) {
     if (q != 1) {
         
         for(int i = 0; i < samplesVector.size(); i++) {
-            //shift the samples to the left by q bits 
-            samplesVector[i] = samplesVector[i] << q;
-            //change the last q bits to half the 2^q value
-            samplesVector[i] = samplesVector[i] | (1 << int(pow(2,q-1)));
-
+            //shift the sample to the left by 1 bit
+            samplesVector[i] = samplesVector[i] << 1;
+            //change that last bit to 1
+            samplesVector[i] = samplesVector[i] | 1;
+            // //shif the sample to the left by q-1 bits
+            samplesVector[i] = samplesVector[i] << (q-1);
         }
 
     }
+
+    //remove the last int padding values
+    samplesVector = vector<short>(samplesVector.begin(), samplesVector.end() - padding);
+
+    //print the samples 
+    // cout << "samplesVector.size(): " << samplesVector.size() << endl;
+    // for(int i = 0; i < samplesVector.size(); i++) {
+    //     cout << samplesVector[i] << endl;
+    // }
 
     //write to wav file the samples vector
     sfhOut.write(samplesVector.data(), samplesVector.size());

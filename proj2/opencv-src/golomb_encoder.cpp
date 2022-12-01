@@ -97,14 +97,29 @@ int main(int argc, char *argv[]) {
 
 	sfhIn.readf(samples.data(), nFrames);
 
-    vector<short> left_samples(nFrames);
-    vector<short> right_samples(nFrames);
+
+
+
+    
+
+    //print samples
+    // cout << "samples.size(): " << samples.size() << endl;
+    // for (int i = 0; i < samples.size(); i++) {
+    //     cout << samples[i] << endl;
+    // }
 
 
 	size_t nBlocks { static_cast<size_t>(ceil(static_cast<double>(nFrames) / bs)) };
 
-	// Do zero padding, if necessary
+    // Do zero padding, if necessary
 	samples.resize(nBlocks * bs * nChannels);
+
+    //calculate the padding done to the end of the file
+    int padding = samples.size() - nFrames * nChannels;
+
+    vector<short> left_samples(samples.size() / 2);
+    vector<short> right_samples(samples.size() / 2);
+
 
     if(quantization){
         for(int i = 0; i < samples.size(); i++){
@@ -115,7 +130,7 @@ int main(int argc, char *argv[]) {
 
     if (nChannels > 1){
         //split samples into left and right channels
-        for (int i = 0; i < nFrames; i++) {
+        for (int i = 0; i < samples.size()/2; i++) {
             left_samples[i] = samples[i * nChannels];
             right_samples[i] = samples[i * nChannels + 1];
         }
@@ -136,7 +151,7 @@ int main(int argc, char *argv[]) {
         }
     }
     else{
-        for(int i = 0; i < nFrames; i++){
+        for(int i = 0; i < left_samples.size(); i++){
             if (i >= 3) {
                 int difference = left_samples[i] - predict(left_samples[i-1], left_samples[i-2], left_samples[i-3]);
                 valuesToBeEncoded.push_back(difference);
@@ -157,9 +172,19 @@ int main(int argc, char *argv[]) {
                 m_vector.push_back(m);
                 
             }
+            if(i == left_samples.size() - 1){
+                int sum = 0;
+                for (int j = i - (i % bs); j < i; j++) {
+                    sum += abs(valuesToBeEncoded[j]);
+                }
+                int u = round(sum/(i % bs));
+                m = calc_m(u);
+                if (m < 1) m = 1;
+                m_vector.push_back(m);
+            }
         }
 
-        for(int i = 0; i < nFrames; i++){
+        for(int i = 0; i < left_samples.size(); i++){
             if (i >= 3) {
                 int difference = right_samples[i] - predict(right_samples[i-1], right_samples[i-2], right_samples[i-3]);
                 valuesToBeEncoded.push_back(difference);
@@ -179,14 +204,25 @@ int main(int argc, char *argv[]) {
                 if (m < 1) m = 1;
                 m_vector.push_back(m);
             }
+            if (i == left_samples.size() - 1) {
+                int sum = 0;
+                for (int j = i - (i % bs); j < i; j++) {
+                    sum += abs(valuesToBeEncoded[j]);
+                }
+                int u = round(sum/(i % bs));
+                m = calc_m(u);
+                if (m < 1) m = 1;
+                m_vector.push_back(m);
+            }
         }
     }
-    // //encode the values
+
+    // for(int i = 0; i < 10000; i++){
+    //     cout << valuesToBeEncoded[i] << endl;
+    // }
 
     string encodedString = "";
     Golomb g;
-
-    // cout << "Encoding ..." << endl;
 
     if (!autoMode){
         for(int i = 0; i < valuesToBeEncoded.size() ; i++) {
@@ -196,28 +232,19 @@ int main(int argc, char *argv[]) {
     else{
         int m_index = 0;
         for (int i = 0; i < valuesToBeEncoded.size(); i++) {
-            // cout << valuesToBeEncoded[i] << endl;
+            // cout << valuesToBeEncoded[i] << endl;   
             if (i % bs == 0 && i != 0) {
                 m_index++;
-                if (m_index >= m_vector.size()) {
-                    break;
-                }
             }
-            encodedString += g.encode(valuesToBeEncoded[i], m_vector[m_index]);       
+            encodedString += g.encode(valuesToBeEncoded[i], m_vector[m_index]);    
         }
-        // cout << "encoded string size: " << encodedString.size() << endl;
     }
-
-
-    //write the encoded string to a file
-
-    // cout << "Writing to file..." << endl;
 
     BitStream bitStream(output, "w");
 
     vector<int> bits;
     vector<int> encoded_bits;
-
+    
     //the next bits will be the encoded string
 
     for(int i = 0; i < encodedString.length(); i++) {
@@ -238,6 +265,11 @@ int main(int argc, char *argv[]) {
         bits.push_back((sfhIn.channels() >> i) & 1);
     }
 
+    //the next 16 bits of the file are the padding
+    for(int i = 15; i >= 0; i--) {
+        bits.push_back((padding >> i) & 1);
+    }
+
     //the next 16 bits of the file are the quantization factor
     for(int i = 15; i >= 0; i--) {
         bits.push_back((q >> i) & 1);
@@ -246,7 +278,7 @@ int main(int argc, char *argv[]) {
 
     //the next 32 bits of the file are the number of frames
     for(int i = 31; i >= 0; i--) {
-        bits.push_back((nFrames >> i) & 1);
+        bits.push_back((samples.size()/2 >> i) & 1);
     }
     // cout << "nFrames: " << nFrames << endl;
 
@@ -276,7 +308,6 @@ int main(int argc, char *argv[]) {
     for (int i = 0; i < m_vector.size(); i++) {
         for (int j = 15; j >= 0; j--) {
             bits.push_back((m_vector[i] >> j) & 1);
-            cout << ((m_vector[i] >> j) & 1);
         }
     }
     

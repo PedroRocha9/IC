@@ -136,61 +136,61 @@ class Golomb {
         std::vector<int> decodeMultiple(std::string encoded_string, std::vector<int> m_vector, int block_size) {
             std::vector<int> result;
             int i = 0;
-            for (int m_i = 0; m_i < m_vector.size(); m_i++) {
-                int m = m_vector[m_i];
-                int count = 0;
-                //calculate possible remainders given m
-                calculateBits(m);
-                while(i < encoded_string.length()) {
-                        int quotient = 0;
-                        while (encoded_string[i] == '0') {
-                            quotient++;
-                            i++;
-                        }
-                        // std::cout << quotient << " q---" << std::endl;
+            int m_i = 0;
+            int count = 0;
+            //calculate possible remainders given m
+            calculateBits(m_vector[m_i]);
+            while(i < encoded_string.length()) {
+                    int quotient = 0;
+                    while (encoded_string[i] == '0') {
+                        quotient++;
                         i++;
-                        int remainder = 0;
-                        //remainder with min_bits
-                        int j = 0;
-                        std::string tmp = "";
+                    }
+                    i++;
+                    int remainder = 0;
+                    //remainder with min_bits
+                    int j = 0;
+                    std::string tmp = "";
 
-                        if (m != 1){
-                            while (j < min_bits) {
-                                tmp += encoded_string[i];
-                                i++;
-                                j++;
-                            }
-
-                            int res1 = bitStringToInt(tmp);
-
-                            if (res1 < n_values_with_min_bits) {
-                                remainder = res1;
-                            } else {
-                                tmp += encoded_string[i];
-                                i++;
-                                remainder = bitStringToInt(tmp) - n_values_with_min_bits;
-                            }
-                        } else {
-                            remainder = 0;
+                    if (m_vector[m_i] != 1){
+                        while (j < min_bits) {
+                            tmp += encoded_string[i];
                             i++;
+                            j++;
                         }
-                        // std::cout << remainder << " r---" << std::endl;
 
-                        //sign bit
-                        int res = quotient * m + remainder;
-                        if (encoded_string[i] == '1') {
-                            result.push_back(-(res));
+                        int res1 = bitStringToInt(tmp);
+
+                        if (res1 < n_values_with_min_bits) {
+                            remainder = res1;
                         } else {
-                            result.push_back(res);
+                            tmp += encoded_string[i];
+                            i++;
+                            remainder = bitStringToInt(tmp) - n_values_with_min_bits;
                         }
-
+                    } else {
+                        remainder = 0;
                         i++;
-                        count++;
-                        
-                        if (count == block_size) break;
+                    }
+                    // std::cout << remainder << " r---" << std::endl;
+
+                    //sign bit
+                    int res = quotient * m_vector[m_i] + remainder;
+                    if (encoded_string[i] == '1') {
+                        result.push_back(-(res));
+                    } else {
+                        result.push_back(res);
+                    }
+
+                    i++;
+                    count++;
                     
+                    if (count == block_size) {
+                        m_i++;
+                        count = 0;
+                        calculateBits(m_vector[m_i]);
+                    }  
                 }
-            }
             return result;
         }
 
