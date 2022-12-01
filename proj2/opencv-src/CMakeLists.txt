@@ -39,6 +39,3 @@ target_link_libraries (image_encoder ${OpenCV_LIBS})
 
 add_executable (image_decoder image_decoder.cpp)
 target_link_libraries (image_decoder ${OpenCV_LIBS})
-
-add_executable (test_golomb test_golomb.cpp)
-target_link_libraries (test_golomb ${OpenCV_LIBS})

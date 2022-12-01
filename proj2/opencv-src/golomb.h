@@ -57,9 +57,8 @@ class Golomb {
 
         int bitStringToInt(std::string bit_string) {
             int result = 0;
-            for (int i = 0; i < bit_string.length(); i++) {
+            for (long unsigned int i = 0; i < bit_string.length(); i++)
                 result = result * 2 + (bit_string[i] - '0');
-            }
 
             return result;
         }
@@ -68,14 +67,6 @@ class Golomb {
         // constructor with m as parameter
         Golomb() { }
 
-        void test() {
-            calculateBits(10);
-            std::vector<std::string> remainders = calculateRemaindersTable(10);
-            for (int i = 0; i < remainders.size(); i++) {
-                std::cout << remainders[i] << std::endl;
-            }
-        }
-        
         //decode function
         std::vector<int> decode(std::string encoded_string, int m) {
             //calculate possible remainders given m
@@ -83,7 +74,7 @@ class Golomb {
             std::vector<int> result;
             int i = 0;
 
-            while(i < encoded_string.length()) {
+            while((long unsigned int) i < encoded_string.length()) {
                 int quotient = 0;
                 while (encoded_string[i] == '0') {
                     quotient++;
@@ -140,7 +131,7 @@ class Golomb {
             int count = 0;
             //calculate possible remainders given m
             calculateBits(m_vector[m_i]);
-            while(i < encoded_string.length()) {
+            while((long unsigned int) i < encoded_string.length()) {
                     int quotient = 0;
                     while (encoded_string[i] == '0') {
                         quotient++;
