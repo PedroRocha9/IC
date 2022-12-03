@@ -88,41 +88,23 @@ int main(int argc, char *argv[]) {
     short original = 0;
 
     // check if the number of arguments is correct
-    if (argc < 3 || argc > 6) {
-        cerr << "Usage: " << argv[0] << " <input file> <output file> [bs (multiple of the width)] [mode] [auto] \n";
+    if (argc < 3 || argc > 4) {
+        cerr << "Usage: " << argv[0] << " <input file> <output file> [mode (default 8)] \n";
         return 1;
     }
 
-    if (strcmp(argv[argc-1], "auto") == 0) {
-        autoMode = true;
-        if (argc == 6) {
-            bs = atoi(argv[3]);
-            mode = atoi(argv[4]);
-        } else if(argc == 5) {
-            mode = atoi(argv[3]);
-        }
-    } else {
-        if (argc == 5) {
-            bs = atoi(argv[3]);
-            mode = atoi(argv[4]);
-        } else if (argc == 4) {
-            mode = atoi(argv[3]);
+    if (argc == 4) {
+        mode = atoi(argv[3]);
+        if (mode < 0 || mode > 8) {
+            cerr << "[mode] must be between 0 and 8\n";
+            return 1;
         }
     }
-        
-    //check if "auto" is passed in
+
+    //output file
     string output = argv[2];
     // read the image
     Mat img = imread(argv[1]);
-
-    if (bs != 0) {
-        if (bs % img.cols != 0) {
-            cerr << "Error: bs must be a multiple of the width of the image" << endl;
-            return 1;
-        }
-    } else {
-        bs = img.cols;
-    }
     
     // check if the image is loaded
     if (img.empty()) {
@@ -130,13 +112,13 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
+    bs = img.cols;
+
     //save image type
     int type = img.type();
 
      // convert the image to YCbCr
     img = rgb2ycbcr(img);
-
-    
 
     vector<int> Ym_vector;
     vector<int> Cbm_vector;
@@ -190,7 +172,7 @@ int main(int argc, char *argv[]) {
                 pixel_index++;
             }
 
-            if(autoMode && pixel_index % bs == 0 && pixel_index != 0) {
+            if(pixel_index % bs == 0 && pixel_index != 0) {
                 int Ysum = 0;
                 int Cbsum = 0;
                 int Crsum = 0;
@@ -221,35 +203,14 @@ int main(int argc, char *argv[]) {
     Golomb g;
 
     //size = rows * cols
-    int size = img.rows * img.cols;
+    int size = img.rows * bs;
 
-    if(!autoMode){
-        for(int i = 0; i < size; i++) {
-            YencodedString += g.encode(YvaluesToBeEncoded[i], original);
-        }
-        for(int i = 0; i < size; i++) {
-            CbencodedString += g.encode(CbvaluesToBeEncoded[i], original);
-        }
-        for(int i = 0; i < size; i++) {
-            CrencodedString += g.encode(CrvaluesToBeEncoded[i], original);
-        }
-    } else {
-        int m_index = 0;
-        for (int i = 0; i < size; i++) {
-            if (i % bs == 0 && i != 0) m_index++;
-            YencodedString += g.encode(YvaluesToBeEncoded[i], Ym_vector[m_index]);
-            CbencodedString += g.encode(CbvaluesToBeEncoded[i], Cbm_vector[m_index]);
-            CrencodedString += g.encode(CrvaluesToBeEncoded[i], Crm_vector[m_index]);
-        }
-    }
-
-    if (!autoMode) {
-        Ym_vector.clear();
-        Cbm_vector.clear();
-        Crm_vector.clear();
-        Ym_vector.push_back(original);
-        Cbm_vector.push_back(original);
-        Crm_vector.push_back(original);
+    int m_index = 0;
+    for (int i = 0; i < size; i++) {
+        if (i % bs == 0 && i != 0) m_index++;
+        YencodedString += g.encode(YvaluesToBeEncoded[i], Ym_vector[m_index]);
+        CbencodedString += g.encode(CbvaluesToBeEncoded[i], Cbm_vector[m_index]);
+        CrencodedString += g.encode(CrvaluesToBeEncoded[i], Crm_vector[m_index]);
     }
 
     BitStream bitStream(output, "w");
