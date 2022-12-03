@@ -37,44 +37,30 @@ int main(int argc, char *argv[]) {
     };
 
     auto predict = [](int a, int b, int c, int mode) {
-        // with a switch case, we can choose the prediction mode
-        //mode = 0 -> average
-        //mode = 1 -> left
-        //mode = 2 -> above
-        //mode = 3 -> left top
-        //mode = 4 -> left + above - left top
-        //mode = 5 -> left + (above - left top) / 2
-        //mode = 6 -> above + (left - left top) / 2
-        //mode = 7 -> left + above / 2
-        //mode = 8 -> non linear prediction:
-        //min(left, above) if  left top >= max(left, above)
-        //max(left, above) if  left top <= min(left, above)
-        //otherwise, left + above - left top
-
         switch(mode) {
             case 0:
-                return (a + b + c) / 3;
+                return (a + b + c) / 3; //mode = 0 -> average
             case 1:
-                return a;
+                return a; //mode = 1 -> left
             case 2:
-                return b;
+                return b; //mode = 2 -> above
             case 3:
-                return c;
+                return c; //mode = 3 -> left top
             case 4:
-                return a + b - c;
+                return a + b - c; //mode = 4 -> left + above - left top
             case 5:
-                return a + (b - c) / 2;
+                return a + (b - c) / 2; //mode = 5 -> left + (above - left top) / 2
             case 6:
-                return b + (a - c) / 2;
+                return b + (a - c) / 2; //mode = 6 -> above + (left - left top) / 2
             case 7:
-                return (a + b) / 2;
-            case 8:
+                return (a + b) / 2; //mode = 7 -> left + above / 2
+            case 8:                 //mode = 8 -> non linear prediction:
                 if (c >= max(a, b))
-                    return min(a, b);
+                    return min(a, b);   //min(left, above) if  left top >= max(left, above)
                 else if (c <= min(a, b))
-                    return max(a, b);
+                    return max(a, b);   //max(left, above) if  left top <= min(left, above)
                 else
-                    return a + b - c;
+                    return a + b - c;   //otherwise, left + above - left top
         }
         return 0;
     };
