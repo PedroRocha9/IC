@@ -20,7 +20,7 @@ class Golomb {
                 max_bits = ceil(log2(m));
                 // calculate min_bits: max_bits - 1
                 min_bits = max_bits - 1;
-                // calculate n_values_with_min_bits: (2^min_bits) - m
+                // calculate n_values_with_min_bits: (2^max_bits) - m
                 n_values_with_min_bits = pow(2, max_bits) - m;
             } else {
                 // if m is 0, then the values are 0
