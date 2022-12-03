@@ -55,7 +55,6 @@ class Golomb {
 
         //decode function for a fixed M value
         std::vector<int> decode(std::string encoded_string, int m) {
-            //calculate possible remainders given m
             calculateBits(m);
             std::vector<int> result;
             // bit position in the encoded string
@@ -136,7 +135,6 @@ class Golomb {
             int m_i = 0;
             // blocksize bits counter
             int count = 0;
-            //calculate possible remainders given m
             calculateBits(m_vector[m_i]);
             while((long unsigned int) i < encoded_string.length()) {
                     int quotient = 0;
@@ -211,7 +209,6 @@ class Golomb {
         }
 
         std::string encode(int num, int m){
-            //calculate possible remainders given m
             calculateBits(m);
             // result string
             std::string result = "";
