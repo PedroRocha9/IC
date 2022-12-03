@@ -41,7 +41,7 @@ def lossless_encoder(lle, idx):
             
             idx += 1
         
-        dump_times_sizes(lle, times, sizes)
+        dump_stats(lle, times, sizes)
         times.clear()
         sizes.clear()
 
@@ -58,14 +58,14 @@ def lossless_encoder(lle, idx):
             
             idx += 1
 
-        dump_times_sizes(lle, times, sizes)
+        dump_stats(lle, times, sizes)
         times.clear()
         sizes.clear()
     
     return idx
 
 
-def dump_times_sizes(f, times, sizes):
+def dump_stats(f, times=None, sizes=None, snr=None):
     f.write('times:\n')
     for t in times:
         f.write(f'{t}\n')
@@ -97,15 +97,16 @@ def decoder(d, idx):
                 d.write(AUDIO_FILES[(i-30) // 4 % 3] + '\n')
 
             subprocess.check_output(f'../opencv-bin/golomb_decoder {i} {i}.wav', shell=True)
-            output = subprocess.check_output(f'../../proj1/sndfile-example-bin/wav_cmp {AUDIO_FILES[(i-30) // 4 % 3]} {i}.wav', shell=True)
-            d.write(f'{output.decode("utf-8").split(" ")[1]}\n')
+            snr = subprocess.check_output(f'../../proj1/sndfile-example-bin/wav_cmp {AUDIO_FILES[(i-30) // 4 % 3]} {i}.wav', shell=True)
+            d.write(f'{snr.decode("utf-8").split(" ")[1]}\n')
 
         # Remove all temporary files
         subprocess.call(f'rm {i}', shell=True)
         subprocess.call(f'rm {i}.wav', shell=True)
 
-    d.write('\n\nSNR:\n')
-
+    d.write('\nSNR Wav_quant:\n')
+    
+    # Gettin SNR values for wav_quant method
     for audio in AUDIO_FILES:
         d.write(audio + '\n')
         for q in QUANT_VALUES:
