@@ -13,7 +13,7 @@ def lossless_encoder(lle, idx):
     for image in IMAGE_FILES:
         lle.write(image +  ': ' + str((subprocess.check_output(f'ls -l {image}', shell=True)).decode("utf-8").split(" ")[4]) + '\n')
         for m in MODE_VALUES:
-            time = subprocess.check_output(f'../opencv-bin/image_encoder {image} {idx} {m} auto', shell=True)
+            time = subprocess.check_output(f'../opencv-bin/image_encoder {image} {idx} {m}', shell=True)
             times.append(time.decode("utf-8").split(" ")[2])
 
             size = subprocess.check_output(f'ls -l {idx}', shell=True)

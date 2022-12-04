@@ -31,7 +31,7 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-    int q = 1;
+    int q = 0;
     //check if "auto" is passed in
     bool autoMode = false;
     bool quantization = false;
@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
         quantization = true;
     }
 
-    if (q > 15 || q < 1) {
+    if (q > 15 || q < 0) {
         cerr << "[q] must be between 1 and 15\n";
         return 1;
     }

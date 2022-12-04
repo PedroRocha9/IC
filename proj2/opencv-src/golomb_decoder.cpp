@@ -67,11 +67,6 @@ int main( int argc, char** argv ) {
         num_zeros += v_num_zeros[i] * pow(2, v_num_zeros.size() - i - 1);
     }
     
-
-    // cout << "block size: " << blockSize << endl;
-    // cout << "number of zeros added: " << num_zeros << endl;
-    // cout << "m_size: " << m_size << endl;
-
     vector<int> m_vector;
     for(int i = 0; i < m_size; i++) {
         vector<int> v_m_i = bs.readBits(16);
@@ -82,11 +77,7 @@ int main( int argc, char** argv ) {
         m_vector.push_back(m_i);
     }
 
-    // cout << "m_vector size: " << m_vector.size() << endl;
-    // for (int i = 0; i < m_vector.size(); i++) {
-    //     cout << m_vector[i] << endl;
-    // }
-
+    //total size of the file - the size of the header and the size of the m vector
     int total = bs.getFileSize() - (16 + 2*m_size);
     long totalBits = total*8;
     vector<int> v_encoded = bs.readBits(totalBits);
@@ -149,14 +140,21 @@ int main( int argc, char** argv ) {
     }
 
     //quantize the samples
-    if (q != 1) {
-        for (long unsigned int i = 0; i < samplesVector.size(); i++) {
-            //shift the sample to the left by 1 bit
-            samplesVector[i] = samplesVector[i] << 1;
-            //change that last bit to 1
-            samplesVector[i] = samplesVector[i] | 1;
-            // //shif the sample to the left by q-1 bits
-            samplesVector[i] = samplesVector[i] << (q-1);
+    if (q != 0) {
+        if(q != 1){
+            for (long unsigned int i = 0; i < samplesVector.size(); i++) {
+                //shift the sample to the left by 1 bit
+                samplesVector[i] = samplesVector[i] << 1;
+                //change that last bit to 1
+                samplesVector[i] = samplesVector[i] | 1;
+                // //shif the sample to the left by q-1 bits
+                samplesVector[i] = samplesVector[i] << (q-1);
+            }
+        } else {
+            for (long unsigned int i = 0; i < samplesVector.size(); i++) {
+                //shift the sample to the left by 1 bit
+                samplesVector[i] = samplesVector[i] << 1;
+            }
         }
     }
 

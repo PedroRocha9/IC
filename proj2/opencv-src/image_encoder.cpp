@@ -37,44 +37,30 @@ int main(int argc, char *argv[]) {
     };
 
     auto predict = [](int a, int b, int c, int mode) {
-        // with a switch case, we can choose the prediction mode
-        //mode = 0 -> average
-        //mode = 1 -> left
-        //mode = 2 -> above
-        //mode = 3 -> left top
-        //mode = 4 -> left + above - left top
-        //mode = 5 -> left + (above - left top) / 2
-        //mode = 6 -> above + (left - left top) / 2
-        //mode = 7 -> left + above / 2
-        //mode = 8 -> non linear prediction:
-        //min(left, above) if  left top >= max(left, above)
-        //max(left, above) if  left top <= min(left, above)
-        //otherwise, left + above - left top
-
         switch(mode) {
             case 0:
-                return (a + b + c) / 3;
+                return (a + b + c) / 3; //mode = 0 -> average
             case 1:
-                return a;
+                return a; //mode = 1 -> left
             case 2:
-                return b;
+                return b; //mode = 2 -> above
             case 3:
-                return c;
+                return c; //mode = 3 -> left top
             case 4:
-                return a + b - c;
+                return a + b - c; //mode = 4 -> left + above - left top
             case 5:
-                return a + (b - c) / 2;
+                return a + (b - c) / 2; //mode = 5 -> left + (above - left top) / 2
             case 6:
-                return b + (a - c) / 2;
+                return b + (a - c) / 2; //mode = 6 -> above + (left - left top) / 2
             case 7:
-                return (a + b) / 2;
-            case 8:
+                return (a + b) / 2; //mode = 7 -> left + above / 2
+            case 8:                 //mode = 8 -> non linear prediction:
                 if (c >= max(a, b))
-                    return min(a, b);
+                    return min(a, b);   //min(left, above) if  left top >= max(left, above)
                 else if (c <= min(a, b))
-                    return max(a, b);
+                    return max(a, b);   //max(left, above) if  left top <= min(left, above)
                 else
-                    return a + b - c;
+                    return a + b - c;   //otherwise, left + above - left top
         }
         return 0;
     };
@@ -88,41 +74,23 @@ int main(int argc, char *argv[]) {
     short original = 0;
 
     // check if the number of arguments is correct
-    if (argc < 3 || argc > 6) {
-        cerr << "Usage: " << argv[0] << " <input file> <output file> [bs (multiple of the width)] [mode] [auto] \n";
+    if (argc < 3 || argc > 4) {
+        cerr << "Usage: " << argv[0] << " <input file> <output file> [mode (default 8)] \n";
         return 1;
     }
 
-    if (strcmp(argv[argc-1], "auto") == 0) {
-        autoMode = true;
-        if (argc == 6) {
-            bs = atoi(argv[3]);
-            mode = atoi(argv[4]);
-        } else if(argc == 5) {
-            mode = atoi(argv[3]);
-        }
-    } else {
-        if (argc == 5) {
-            bs = atoi(argv[3]);
-            mode = atoi(argv[4]);
-        } else if (argc == 4) {
-            mode = atoi(argv[3]);
+    if (argc == 4) {
+        mode = atoi(argv[3]);
+        if (mode < 0 || mode > 8) {
+            cerr << "[mode] must be between 0 and 8\n";
+            return 1;
         }
     }
-        
-    //check if "auto" is passed in
+
+    //output file
     string output = argv[2];
     // read the image
     Mat img = imread(argv[1]);
-
-    if (bs != 0) {
-        if (bs % img.cols != 0) {
-            cerr << "Error: bs must be a multiple of the width of the image" << endl;
-            return 1;
-        }
-    } else {
-        bs = img.cols;
-    }
     
     // check if the image is loaded
     if (img.empty()) {
@@ -130,13 +98,13 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
+    bs = img.cols;
+
     //save image type
     int type = img.type();
 
      // convert the image to YCbCr
     img = rgb2ycbcr(img);
-
-    
 
     vector<int> Ym_vector;
     vector<int> Cbm_vector;
@@ -190,7 +158,7 @@ int main(int argc, char *argv[]) {
                 pixel_index++;
             }
 
-            if(autoMode && pixel_index % bs == 0 && pixel_index != 0) {
+            if(pixel_index % bs == 0 && pixel_index != 0) {
                 int Ysum = 0;
                 int Cbsum = 0;
                 int Crsum = 0;
@@ -221,35 +189,14 @@ int main(int argc, char *argv[]) {
     Golomb g;
 
     //size = rows * cols
-    int size = img.rows * img.cols;
+    int size = img.rows * bs;
 
-    if(!autoMode){
-        for(int i = 0; i < size; i++) {
-            YencodedString += g.encode(YvaluesToBeEncoded[i], original);
-        }
-        for(int i = 0; i < size; i++) {
-            CbencodedString += g.encode(CbvaluesToBeEncoded[i], original);
-        }
-        for(int i = 0; i < size; i++) {
-            CrencodedString += g.encode(CrvaluesToBeEncoded[i], original);
-        }
-    } else {
-        int m_index = 0;
-        for (int i = 0; i < size; i++) {
-            if (i % bs == 0 && i != 0) m_index++;
-            YencodedString += g.encode(YvaluesToBeEncoded[i], Ym_vector[m_index]);
-            CbencodedString += g.encode(CbvaluesToBeEncoded[i], Cbm_vector[m_index]);
-            CrencodedString += g.encode(CrvaluesToBeEncoded[i], Crm_vector[m_index]);
-        }
-    }
-
-    if (!autoMode) {
-        Ym_vector.clear();
-        Cbm_vector.clear();
-        Crm_vector.clear();
-        Ym_vector.push_back(original);
-        Cbm_vector.push_back(original);
-        Crm_vector.push_back(original);
+    int m_index = 0;
+    for (int i = 0; i < size; i++) {
+        if (i % bs == 0 && i != 0) m_index++;
+        YencodedString += g.encode(YvaluesToBeEncoded[i], Ym_vector[m_index]);
+        CbencodedString += g.encode(CbvaluesToBeEncoded[i], Cbm_vector[m_index]);
+        CrencodedString += g.encode(CrvaluesToBeEncoded[i], Crm_vector[m_index]);
     }
 
     BitStream bitStream(output, "w");
