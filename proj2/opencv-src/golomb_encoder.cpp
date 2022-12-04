@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
         quantization = true;
     }
 
-    if (q > 15 || q < 0) {
+    if (q > 16 || q < 0) {
         cerr << "[q] must be between 1 and 15\n";
         return 1;
     }
