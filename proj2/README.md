@@ -100,6 +100,11 @@ Example
 ./golomb_decoder sample06_enc sample06_decoded.wav
 ```
 
+To run the tests script  
+```bash
+python3 automate.py
+```
+
 ### Exercise 6
 **Encode image parameters**
 ```bash
@@ -110,4 +115,9 @@ Mode it's an integer between 1 and 8.
 **Decode image parameters**
 ```bash
 ./image_decoder <intput_file> <output_file>
+```
+
+To run the tests script  
+```bash
+python3 imageauto.py
 ```
