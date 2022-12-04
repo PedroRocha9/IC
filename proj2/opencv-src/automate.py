@@ -8,18 +8,26 @@ idx = 0
 
 
 def lossy_encoder(loe, idx):
-    # Testing with auto M diffrent block 2048
-    # Testing quantization values (2, 4, 6, 8)
+    times = []
+    sizes = []
+    
     loe.write('Testing with auto M diffrent block 2048\n')
     loe.write('Testing quantization values (2, 4, 6, 8)\n')
     for audio in AUDIO_FILES:
         loe.write(audio + '\n')
         for q in QUANT_VALUES:
-            subprocess.check_output(f'../opencv-bin/golomb_encoder {audio} {idx} 2048 auto {q}', shell=True)
+            time = subprocess.check_output(f'../opencv-bin/golomb_encoder {audio} {idx} 2048 auto {q}', shell=True)
+            times.append(time.decode("utf-8").split(" ")[2])
+            
             size = subprocess.check_output(f'ls -l {idx}', shell=True)
-            loe.write(f'{size.decode("utf-8").split(" ")[4]}\n')
+            #loe.write(f'{size.decode("utf-8").split(" ")[4]}\n')
+            sizes.append(size.decode("utf-8").split(" ")[4])
 
             idx += 1
+
+        dump_stats(loe, times, sizes)
+        times.clear()
+        sizes.clear()
     
     return idx
 
@@ -76,6 +84,8 @@ def dump_stats(f, times=None, sizes=None, snr=None):
 
 
 def decoder(d, idx):
+    snrs = []
+
     for i in range(idx):
         if i < 30:
             # Decode lossless
@@ -96,17 +106,23 @@ def decoder(d, idx):
                     d.write('Testing quantization values (2, 4, 6, 8)\n')
                 d.write(AUDIO_FILES[(i-30) // 4 % 3] + '\n')
 
-            subprocess.check_output(f'../opencv-bin/golomb_decoder {i} {i}.wav', shell=True)
+            output = subprocess.check_output(f'../opencv-bin/golomb_decoder {i} {i}.wav', shell=True)
             snr = subprocess.check_output(f'../../proj1/sndfile-example-bin/wav_cmp {AUDIO_FILES[(i-30) // 4 % 3]} {i}.wav', shell=True)
-            d.write(f'{snr.decode("utf-8").split(" ")[1]}\n')
+            #d.write(f'{snr.decode("utf-8").split(" ")[1]}\n')
+            d.write(f'{output.decode("utf-8").split(" ")[2]}\n')
+            snrs.append(snr.decode("utf-8").split(" ")[1])
 
         # Remove all temporary files
         subprocess.call(f'rm {i}', shell=True)
         subprocess.call(f'rm {i}.wav', shell=True)
 
+    d.write('\nSNR:\n')
+    for i, s in enumerate(snrs):
+        if i % 4 == 0:
+            d.write(f'{AUDIO_FILES[i // 4 % 3]}\n')
+        d.write(f'{s}\n')
+
     d.write('\nSNR Wav_quant:\n')
-    
-    # Gettin SNR values for wav_quant method
     for audio in AUDIO_FILES:
         d.write(audio + '\n')
         for q in QUANT_VALUES:
