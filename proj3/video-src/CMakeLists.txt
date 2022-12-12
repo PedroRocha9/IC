@@ -13,5 +13,5 @@ SET (CMAKE_CXX_FLAGS_DEBUG "-g3 -fsanitize=address")
 SET (BASE_DIR ${CMAKE_SOURCE_DIR} )
 SET (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BASE_DIR}/../video-bin)
 
-add_executable (hello hello.cpp)
-target_link_libraries (hello ${OpenCV_LIBS})
+add_executable (video_cmp video_cmp.cpp)
+target_link_libraries (video_cmp ${OpenCV_LIBS})
