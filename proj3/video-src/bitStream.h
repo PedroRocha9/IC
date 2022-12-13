@@ -120,6 +120,40 @@ class BitStream {
             return outBits;
         }
 
+        std::vector<int> readBits2(int n) {
+            if (fileMode != "r") {
+                std::cout << "File not open for reading" << std::endl;
+                return std::vector<int>();
+            }
+
+            std::vector<int> outBits;
+
+            char byte;
+            int bitCount = 0;
+            while (bitCount < n) {
+                if (currentBitPos == 0) {
+                    file.read(&byte, 1);
+
+                    // Use bitwise operators to reverse the order of the bits within the byte
+                    byte = ((byte & 0xF0) >> 4) | ((byte & 0x0F) << 4);
+                    byte = ((byte & 0xCC) >> 2) | ((byte & 0x33) << 2);
+                    byte = ((byte & 0xAA) >> 1) | ((byte & 0x55) << 1);
+                }
+
+                // Use a bitwise operator to extract the current bit from the byte
+                int bit = (byte >> currentBitPos) & 1;
+                outBits.push_back(bit);
+                currentBitPos++;
+                bitCount++;
+
+                if (currentBitPos == 8) {
+                    currentBitPos = 0;
+                }
+            }
+
+            return outBits;
+        }
+
         int readBit() {
             if (fileMode != "r") {
                 std::cout << "File not open for reading" << std::endl;
@@ -143,18 +177,10 @@ class BitStream {
                 std::cout << "File is not open for writing" << std::endl;
                 return;
             }
-
-            //open the file and write the next n bits
-            //n is size of bits
             int n = bits.size();
-
-            // std::cout << "n: " << n-64 << std::endl;
-
             int bitCount = 0;
             while (n > 0) {
                 if (currentBitPos == 8) {
-                    //reset the current bit position
-                    //write the bitArray to the end of the file
                     char byte = bitArrayToByte(bitArray);
                     file.write(&byte, 1);
                     currentBitPos = 0;

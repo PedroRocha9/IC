@@ -11,6 +11,13 @@ using namespace std;
 using namespace cv;
 
 int main(int argc, char* argv[]){
+    //function that converts array of ints (1 or 0) to int
+    auto bits_to_int = [](vector<int> bits) {
+        int c = 0;
+        for(long unsigned int i = 0; i < bits.size(); i++) c += bits[i] * pow(2, bits.size() - i - 1);
+        return c;
+    };
+
     //function that converts array of bits to char
     auto bits_to_char = [](vector<int> bits) {
         int c = 0;
@@ -49,6 +56,8 @@ int main(int argc, char* argv[]){
     //write the header
     ofstream out(output_file, ios::out | ios::binary);
 
+    //start a new timer
+    clock_t start2 = clock();
     vector<int> v_width = bs.readBits(16);
     vector<int> v_height = bs.readBits(16);
     vector<int> v_num_frames = bs.readBits(16);
@@ -66,85 +75,24 @@ int main(int argc, char* argv[]){
     vector<int> v_Cbm_size = bs.readBits(32);
     vector<int> v_Crm_size = bs.readBits(32);
 
-    int width = 0;
-    for(long unsigned int i = 0; i < v_width.size(); i++)
-        width += v_width[i] * pow(2, v_width.size() - i - 1);
-
-    int height = 0;
-    for(long unsigned int i = 0; i < v_height.size(); i++)
-        height += v_height[i] * pow(2, v_height.size() - i - 1);
-
-    int num_frames = 0;
-    for(long unsigned int i = 0; i < v_num_frames.size(); i++)
-        num_frames += v_num_frames[i] * pow(2, v_num_frames.size() - i - 1);
-
-    int color_space = 0;
-    for(long unsigned int i = 0; i < v_color_space.size(); i++)
-        color_space += v_color_space[i] * pow(2, v_color_space.size() - i - 1);
-
-    int aspect_ratio_1 = 0;
-    for(long unsigned int i = 0; i < v_aspect_ratio_1.size(); i++)
-        aspect_ratio_1 += v_aspect_ratio_1[i] * pow(2, v_aspect_ratio_1.size() - i - 1);
-
-    int aspect_ratio_2 = 0;
-    for(long unsigned int i = 0; i < v_aspect_ratio_2.size(); i++)
-        aspect_ratio_2 += v_aspect_ratio_2[i] * pow(2, v_aspect_ratio_2.size() - i - 1);
-
-    int frame_rate_1 = 0;
-    for(long unsigned int i = 0; i < v_frame_rate_1.size(); i++)
-        frame_rate_1 += v_frame_rate_1[i] * pow(2, v_frame_rate_1.size() - i - 1);
-
-    int frame_rate_2 = 0;
-    for(long unsigned int i = 0; i < v_frame_rate_2.size(); i++)
-        frame_rate_2 += v_frame_rate_2[i] * pow(2, v_frame_rate_2.size() - i - 1);
-
+    int width = bits_to_int(v_width);
+    int height = bits_to_int(v_height);
+    int num_frames = bits_to_int(v_num_frames);
+    int color_space = bits_to_int(v_color_space);
+    int aspect_ratio_1 = bits_to_int(v_aspect_ratio_1);
+    int aspect_ratio_2 = bits_to_int(v_aspect_ratio_2);
+    int frame_rate_1 = bits_to_int(v_frame_rate_1);
+    int frame_rate_2 = bits_to_int(v_frame_rate_2);
     char interlace = bits_to_char(v_interlace);
+    int bs_size = bits_to_int(v_bs);
+    int Ybits_size = bits_to_int(v_Ybits_size);
+    int Cbbits_size = bits_to_int(v_Cbbits_size);
+    int Crbits_size = bits_to_int(v_Crbits_size);
+    int Ym_size = bits_to_int(v_Ym_size);
+    int Cbm_size = bits_to_int(v_Cbm_size);
+    int Crm_size = bits_to_int(v_Crm_size);
 
-    int bs_size = 0;
-    for(long unsigned int i = 0; i < v_bs.size(); i++)
-        bs_size += v_bs[i] * pow(2, v_bs.size() - i - 1);
-
-    int Ybits_size = 0;
-    for(long unsigned int i = 0; i < v_Ybits_size.size(); i++)
-        Ybits_size += v_Ybits_size[i] * pow(2, v_Ybits_size.size() - i - 1);
-
-    int Cbbits_size = 0;
-    for(long unsigned int i = 0; i < v_Cbbits_size.size(); i++)
-        Cbbits_size += v_Cbbits_size[i] * pow(2, v_Cbbits_size.size() - i - 1);
-
-    int Crbits_size = 0;
-    for(long unsigned int i = 0; i < v_Crbits_size.size(); i++)
-        Crbits_size += v_Crbits_size[i] * pow(2, v_Crbits_size.size() - i - 1);
-
-    int Ym_size = 0;
-    for(long unsigned int i = 0; i < v_Ym_size.size(); i++)
-        Ym_size += v_Ym_size[i] * pow(2, v_Ym_size.size() - i - 1);
-
-    int Cbm_size = 0;
-    for(long unsigned int i = 0; i < v_Cbm_size.size(); i++)
-        Cbm_size += v_Cbm_size[i] * pow(2, v_Cbm_size.size() - i - 1);
-
-    int Crm_size = 0;
-    for(long unsigned int i = 0; i < v_Crm_size.size(); i++)
-        Crm_size += v_Crm_size[i] * pow(2, v_Crm_size.size() - i - 1);
-
-    // cout << "width: " << width << endl;
-    // cout << "height: " << height << endl;
-    // cout << "num_frames: " << num_frames << endl;
-    // cout << "color_space: " << color_space << endl;
-    // cout << "aspect_ratio_1: " << aspect_ratio_1 << endl;
-    // cout << "aspect_ratio_2: " << aspect_ratio_2 << endl;
-    // cout << "frame_rate_1: " << frame_rate_1 << endl;
-    // cout << "frame_rate_2: " << frame_rate_2 << endl;
-    // cout << "interlace: " << interlace << endl;
-    // cout << "bs_size: " << bs_size << endl;
-    // cout << "Ybits_size: " << Ybits_size << endl;
-    // cout << "Cbbits_size: " << Cbbits_size << endl;
-    // cout << "Crbits_size: " << Crbits_size << endl;
-    // cout << "Ym_size: " << Ym_size << endl;
-    // cout << "Cbm_size: " << Cbm_size << endl;
-    // cout << "Crm_size: " << Crm_size << endl;
-
+    //write the header
     if(color_space != 420)
         out << "YUV4MPEG2 W" << width << " H" << height << " F" << frame_rate_1 << ":" << frame_rate_2 << " Ip A" << aspect_ratio_1 << ":" << aspect_ratio_2 << " C" << color_space << endl;
     else 
@@ -153,13 +101,12 @@ int main(int argc, char* argv[]){
     //write to the file FRAME
     out << "FRAME" << endl;
 
+    //READING M VALUES
     vector<int> Ym;
     for(int i = 0; i < Ym_size; i++){
         vector<int> v_Ym = bs.readBits(8);
         int Ym_i = 0;
-        for (long unsigned int j = 0; j < v_Ym.size(); j++){
-            Ym_i += v_Ym[j] * pow(2, v_Ym.size() - j - 1);
-        }
+        for (long unsigned int j = 0; j < v_Ym.size(); j++) Ym_i += v_Ym[j] * pow(2, v_Ym.size() - j - 1);
         Ym.push_back(Ym_i);
     }
 
@@ -167,9 +114,7 @@ int main(int argc, char* argv[]){
     for(int i = 0; i < Cbm_size; i++){
         vector<int> v_Cbm = bs.readBits(8);
         int Cbm_i = 0;
-        for (long unsigned int j = 0; j < v_Cbm.size(); j++){
-            Cbm_i += v_Cbm[j] * pow(2, v_Cbm.size() - j - 1);
-        }
+        for (long unsigned int j = 0; j < v_Cbm.size(); j++) Cbm_i += v_Cbm[j] * pow(2, v_Cbm.size() - j - 1);
         Cbm.push_back(Cbm_i);
     }
 
@@ -177,41 +122,62 @@ int main(int argc, char* argv[]){
     for(int i = 0; i < Crm_size; i++){
         vector<int> v_Crm = bs.readBits(8);
         int Crm_i = 0;
-        for (long unsigned int j = 0; j < v_Crm.size(); j++){
-            Crm_i += v_Crm[j] * pow(2, v_Crm.size() - j - 1);
-        }
+        for (long unsigned int j = 0; j < v_Crm.size(); j++) Crm_i += v_Crm[j] * pow(2, v_Crm.size() - j - 1);
         Crm.push_back(Crm_i);
     }
+    //end the timer
+    clock_t end2 = clock();
+    double elapsed_secs2 = double(end2 - start2) / CLOCKS_PER_SEC * 1000;
+    cout << "Time to read header including m: " << elapsed_secs2 << " ms" << endl;
 
-    vector<int> Ybits = bs.readBits(Ybits_size);
-    vector<int> Cbbits = bs.readBits(Cbbits_size);
-    vector<int> Crbits = bs.readBits(Crbits_size);
+    //start the timer
+    start2 = clock();
+
+    //READING YUV VALUES
+    vector<int> Ybits = bs.readBits2(Ybits_size);
+    vector<int> Cbbits = bs.readBits2(Cbbits_size);
+    vector<int> Crbits = bs.readBits2(Crbits_size);
+
+    end2 = clock();
+    elapsed_secs2 = double(end2 - start2) / CLOCKS_PER_SEC * 1000;
+    cout << "Time to read including YUV values: " << elapsed_secs2 << " ms" << endl;
+
+    //start the timer
+    start2 = clock();
 
     string Yencodedstring = "";
-    for(long unsigned int i = 0; i < Ybits.size(); i++){
-        Yencodedstring += to_string(Ybits[i]);
-    }
+    for(long unsigned int i = 0; i < Ybits.size(); i++) Yencodedstring += Ybits[i] + '0';
     string Cbencodedstring = "";
-    for(long unsigned int i = 0; i < Cbbits.size(); i++){
-        Cbencodedstring += to_string(Cbbits[i]);
-    }
     string Crencodedstring = "";
-    for(long unsigned int i = 0; i < Crbits.size(); i++){
-        Crencodedstring += to_string(Crbits[i]);
+    for(long unsigned int i = 0; i < Cbbits.size(); i++) {
+        Cbencodedstring += Cbbits[i] + '0';
+        Crencodedstring += Crbits[i] + '0';
     }
 
+    //end the timer
+    end2 = clock();
+    elapsed_secs2 = double(end2 - start2) / CLOCKS_PER_SEC * 1000;
+    cout << "Time to parse YUV values: " << elapsed_secs2 << " ms" << endl;
+    //start the timer
+    start2 = clock();
+
+    //DECODE YUV VALUES
     Golomb g;
     vector<int> Ydecoded = g.decodeMultiple(Yencodedstring, Ym, bs_size);
     vector<int> Cbdecoded = g.decodeMultiple(Cbencodedstring, Cbm, bs_size);
     vector<int> Crdecoded = g.decodeMultiple(Crencodedstring, Crm, bs_size);
 
-    // for(int i = 0; i < 101376; i++){
-    //     cout << Ydecoded[i] << endl;
-    // }
-
     Mat YMat = Mat(height, width, CV_8UC1);
     Mat UMat = Mat(height/2, width/2, CV_8UC1);
     Mat VMat = Mat(height/2, width/2, CV_8UC1);
+
+    //end the timer
+    end2 = clock();
+    elapsed_secs2 = double(end2 - start2) / CLOCKS_PER_SEC * 1000;
+    cout << "Time to decode YUV values: " << elapsed_secs2 << " ms" << endl;
+
+    //start the timer
+    start2 = clock();
 
     //undo the predictions
     int pixel_idx = 0;
@@ -255,11 +221,6 @@ int main(int argc, char* argv[]){
                 }
             }
         }
-        // for(int i = 0; i < height; i++){
-        //     for(int j = 0; j < width; j++){
-        //         cout << (int)YMat.at<uchar>(i, j) << endl;
-        //     }
-        // }
 
         //convert the matrix back to a vector
         vector<int> Y_vector;
@@ -303,6 +264,11 @@ int main(int argc, char* argv[]){
         if(n < num_frames - 1)
             out << "FRAME" << endl;
     }
+
+    //end the timer
+    end2 = clock();
+    elapsed_secs2 = double(end2 - start2) / CLOCKS_PER_SEC * 1000;
+    cout << "Time to undo the predictions and write to file: " << elapsed_secs2 << " ms" << endl;
 
     //close the file
     out.close();
