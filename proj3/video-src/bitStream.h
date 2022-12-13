@@ -92,6 +92,14 @@ class BitStream {
             return byte;
         }
 
+        char bitArrayToByte2(std::vector<int> bitArray){
+            char byte = 0;
+            for (int i = 0; i < 8; i++) {
+                byte += bitArray[i] << (7-i);
+            } 
+            return byte;
+        }
+
         std::vector<int> readBits(int n) {
             if (fileMode != "r") {
                 std::cout << "File not open for reading" << std::endl;
@@ -181,7 +189,7 @@ class BitStream {
             int bitCount = 0;
             while (n > 0) {
                 if (currentBitPos == 8) {
-                    char byte = bitArrayToByte(bitArray);
+                    char byte = bitArrayToByte2(bitArray);
                     file.write(&byte, 1);
                     currentBitPos = 0;
                 }

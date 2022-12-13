@@ -168,8 +168,21 @@ int main(int argc, char* argv[]){
     vector<int> Crdecoded = g.decodeMultiple(Crencodedstring, Crm, bs_size);
 
     Mat YMat = Mat(height, width, CV_8UC1);
-    Mat UMat = Mat(height/2, width/2, CV_8UC1);
-    Mat VMat = Mat(height/2, width/2, CV_8UC1);
+    Mat UMat;
+    Mat VMat;
+
+    if(color_space == 420){
+        UMat = Mat(height/2, width/2, CV_8UC1);
+        VMat = Mat(height/2, width/2, CV_8UC1);
+    }
+    else if(color_space == 422){
+        UMat = Mat(height, width/2, CV_8UC1);
+        VMat = Mat(height, width/2, CV_8UC1);
+    }
+    else if(color_space == 444){
+        UMat = Mat(height, width, CV_8UC1);
+        VMat = Mat(height, width, CV_8UC1);
+    }
 
     //end the timer
     end2 = clock();
@@ -184,8 +197,18 @@ int main(int argc, char* argv[]){
     int pixel_idx2 = 0;
     for(int n = 0; n < num_frames; n++){
         YMat = Mat(height, width, CV_8UC1);
-        UMat = Mat(height/2, width/2, CV_8UC1);
-        VMat = Mat(height/2, width/2, CV_8UC1);
+        if(color_space == 420){
+            UMat = Mat(height/2, width/2, CV_8UC1);
+            VMat = Mat(height/2, width/2, CV_8UC1);
+        }
+        else if(color_space == 422){
+            UMat = Mat(height, width/2, CV_8UC1);
+            VMat = Mat(height, width/2, CV_8UC1);
+        }
+        else if(color_space == 444){
+            UMat = Mat(height, width, CV_8UC1);
+            VMat = Mat(height, width, CV_8UC1);
+        }
         for(int i = 0; i < height; i++){
             for(int j = 0; j < width; j++){
                 if(i == 0 && j == 0){
@@ -196,7 +219,13 @@ int main(int argc, char* argv[]){
                     pixel_idx2++;
                 } else if(i == 0){
                     YMat.at<uchar>(i, j) = Ydecoded[pixel_idx] + YMat.at<uchar>(i, j-1);
-                    if(j < (width/2)){
+                    if(color_space == 420 || color_space == 422){
+                        if(j < (width/2)){
+                            UMat.at<uchar>(i,j) = Cbdecoded[pixel_idx2] + UMat.at<uchar>(i, j-1);
+                            VMat.at<uchar>(i,j) = Crdecoded[pixel_idx2] + VMat.at<uchar>(i, j-1);
+                            pixel_idx2++;
+                        }
+                    } else if(color_space == 444){
                         UMat.at<uchar>(i,j) = Cbdecoded[pixel_idx2] + UMat.at<uchar>(i, j-1);
                         VMat.at<uchar>(i,j) = Crdecoded[pixel_idx2] + VMat.at<uchar>(i, j-1);
                         pixel_idx2++;
@@ -204,7 +233,13 @@ int main(int argc, char* argv[]){
                     pixel_idx++;
                 } else if(j == 0){
                     YMat.at<uchar>(i, j) = Ydecoded[pixel_idx] + YMat.at<uchar>(i-1, j);
-                    if(i < (height/2)){
+                    if(color_space == 420){
+                        if(i < (height/2)){
+                            UMat.at<uchar>(i,j) = Cbdecoded[pixel_idx2] + UMat.at<uchar>(i-1, j);
+                            VMat.at<uchar>(i,j) = Crdecoded[pixel_idx2] + VMat.at<uchar>(i-1, j);
+                            pixel_idx2++;
+                        }
+                    } else if(color_space == 422 || color_space == 444){
                         UMat.at<uchar>(i,j) = Cbdecoded[pixel_idx2] + UMat.at<uchar>(i-1, j);
                         VMat.at<uchar>(i,j) = Crdecoded[pixel_idx2] + VMat.at<uchar>(i-1, j);
                         pixel_idx2++;
@@ -212,7 +247,19 @@ int main(int argc, char* argv[]){
                     pixel_idx++;
                 } else {
                     YMat.at<uchar>(i, j) = Ydecoded[pixel_idx] + predict(YMat.at<uchar>(i, j-1), YMat.at<uchar>(i-1, j), YMat.at<uchar>(i-1, j-1));
-                    if(i < (height/2) && j < (width/2)){
+                    if(color_space == 420){
+                        if(i < (height/2) && j < (width/2)){
+                            UMat.at<uchar>(i,j) = Cbdecoded[pixel_idx2] + predict(UMat.at<uchar>(i, j-1), UMat.at<uchar>(i-1, j), UMat.at<uchar>(i-1, j-1));
+                            VMat.at<uchar>(i,j) = Crdecoded[pixel_idx2] + predict(VMat.at<uchar>(i, j-1), VMat.at<uchar>(i-1, j), VMat.at<uchar>(i-1, j-1));
+                            pixel_idx2++;
+                        }
+                    } else if(color_space == 422){
+                        if(j < (width/2)){
+                            UMat.at<uchar>(i,j) = Cbdecoded[pixel_idx2] + predict(UMat.at<uchar>(i, j-1), UMat.at<uchar>(i-1, j), UMat.at<uchar>(i-1, j-1));
+                            VMat.at<uchar>(i,j) = Crdecoded[pixel_idx2] + predict(VMat.at<uchar>(i, j-1), VMat.at<uchar>(i-1, j), VMat.at<uchar>(i-1, j-1));
+                            pixel_idx2++;
+                        }
+                    } else if(color_space == 444){
                         UMat.at<uchar>(i,j) = Cbdecoded[pixel_idx2] + predict(UMat.at<uchar>(i, j-1), UMat.at<uchar>(i-1, j), UMat.at<uchar>(i-1, j-1));
                         VMat.at<uchar>(i,j) = Crdecoded[pixel_idx2] + predict(VMat.at<uchar>(i, j-1), VMat.at<uchar>(i-1, j), VMat.at<uchar>(i-1, j-1));
                         pixel_idx2++;
@@ -230,8 +277,22 @@ int main(int argc, char* argv[]){
             for(int j = 0; j < width; j++){
                 Y_vector.push_back(YMat.at<uchar>(i, j));
             }
-            if (i < height/2 && i < width/2) {
-                for(int j = 0; j < width/2; j++){
+            if(color_space == 420){
+                if (i < height/2 && i < width/2) {
+                    for(int j = 0; j < width/2; j++){
+                        Cb_vector.push_back(UMat.at<uchar>(i, j));
+                        Cr_vector.push_back(VMat.at<uchar>(i, j));
+                    }
+                }
+            } else if(color_space == 422){
+                if (i < width/2) {
+                    for(int j = 0; j < width/2; j++){
+                        Cb_vector.push_back(UMat.at<uchar>(i, j));
+                        Cr_vector.push_back(VMat.at<uchar>(i, j));
+                    }
+                }
+            } else if(color_space == 444){
+                for(int j = 0; j < width; j++){
                     Cb_vector.push_back(UMat.at<uchar>(i, j));
                     Cr_vector.push_back(VMat.at<uchar>(i, j));
                 }
