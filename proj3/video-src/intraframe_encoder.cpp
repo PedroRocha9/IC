@@ -56,9 +56,17 @@ int main(int argc, char* argv[]){
         return 1;
     }
 
+
+
     YUV4MPEG2Reader reader(argv[1]);
 
     int width = reader.width();
+
+    //check if the blocksize is < width
+    if(blockSize > width){
+        cout << "Error: Block size must be less than width" << endl;
+        return 1;
+    }
     int height = reader.height();
     int colorSpace = stoi(reader.colorSpace());
     if(colorSpace != 420 && colorSpace != 422 && colorSpace != 444){
