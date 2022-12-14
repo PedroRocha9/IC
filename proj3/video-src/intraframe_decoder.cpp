@@ -25,13 +25,6 @@ int main(int argc, char* argv[]){
         return c;
     };
 
-    //function to calculate m based on u
-    auto calc_m = [](int u) {
-        //u = alpha / 1 - alpha
-        //m = - (1 / log(alpha))
-        return (int) - (1/log((double) u / (1 + u)));
-    };
-
     auto predict = [](int a, int b, int c) {
         if (c >= max(a, b))
             return min(a, b);   //min(left, above) if  left top >= max(left, above)
@@ -94,9 +87,9 @@ int main(int argc, char* argv[]){
 
     //write the header
     if(color_space != 420)
-        out << "YUV4MPEG2 W" << width << " H" << height << " F" << frame_rate_1 << ":" << frame_rate_2 << " Ip A" << aspect_ratio_1 << ":" << aspect_ratio_2 << " C" << color_space << endl;
+        out << "YUV4MPEG2 W" << width << " H" << height << " F" << frame_rate_1 << ":" << frame_rate_2 << " I" << interlace << " A" << aspect_ratio_1 << ":" << aspect_ratio_2 << " C" << color_space << endl;
     else 
-        out << "YUV4MPEG2 W" << width << " H" << height << " F" << frame_rate_1 << ":" << frame_rate_2 << " Ip A" << aspect_ratio_1 << ":" << aspect_ratio_2 << endl;
+        out << "YUV4MPEG2 W" << width << " H" << height << " F" << frame_rate_1 << ":" << frame_rate_2 << " I" << interlace << " A" << aspect_ratio_1 << ":" << aspect_ratio_2 << endl;
 
     //write to the file FRAME
     out << "FRAME" << endl;
@@ -171,15 +164,13 @@ int main(int argc, char* argv[]){
     Mat UMat;
     Mat VMat;
 
-    if(color_space == 420){
+    if (color_space == 420) {
         UMat = Mat(height/2, width/2, CV_8UC1);
         VMat = Mat(height/2, width/2, CV_8UC1);
-    }
-    else if(color_space == 422){
+    } else if (color_space == 422) {
         UMat = Mat(height, width/2, CV_8UC1);
         VMat = Mat(height, width/2, CV_8UC1);
-    }
-    else if(color_space == 444){
+    } else if (color_space == 444) {
         UMat = Mat(height, width, CV_8UC1);
         VMat = Mat(height, width, CV_8UC1);
     }
@@ -195,46 +186,45 @@ int main(int argc, char* argv[]){
     //undo the predictions
     int pixel_idx = 0;
     int pixel_idx2 = 0;
-    for(int n = 0; n < num_frames; n++){
+    for (int n = 0; n < num_frames; n++) {
         YMat = Mat(height, width, CV_8UC1);
-        if(color_space == 420){
+        if (color_space == 420) {
             UMat = Mat(height/2, width/2, CV_8UC1);
             VMat = Mat(height/2, width/2, CV_8UC1);
-        }
-        else if(color_space == 422){
+        } else if (color_space == 422) {
             UMat = Mat(height, width/2, CV_8UC1);
             VMat = Mat(height, width/2, CV_8UC1);
-        }
-        else if(color_space == 444){
+        } else if (color_space == 444) {
             UMat = Mat(height, width, CV_8UC1);
             VMat = Mat(height, width, CV_8UC1);
         }
-        for(int i = 0; i < height; i++){
-            for(int j = 0; j < width; j++){
-                if(i == 0 && j == 0){
+
+        for (int i = 0; i < height; i++) {
+            for (int j = 0; j < width; j++) {
+                if (i == 0 && j == 0) {
                     YMat.at<uchar>(i, j) = Ydecoded[pixel_idx];
                     UMat.at<uchar>(i,j) = Cbdecoded[pixel_idx2];
                     VMat.at<uchar>(i,j) = Crdecoded[pixel_idx2];
                     pixel_idx++;
                     pixel_idx2++;
-                } else if(i == 0){
+                } else if (i == 0) {
                     YMat.at<uchar>(i, j) = Ydecoded[pixel_idx] + YMat.at<uchar>(i, j-1);
-                    if(color_space == 420 || color_space == 422){
-                        if(j < (width/2)){
+                    if (color_space == 420 || color_space == 422) {
+                        if (j < (width/2)) {
                             UMat.at<uchar>(i,j) = Cbdecoded[pixel_idx2] + UMat.at<uchar>(i, j-1);
                             VMat.at<uchar>(i,j) = Crdecoded[pixel_idx2] + VMat.at<uchar>(i, j-1);
                             pixel_idx2++;
                         }
-                    } else if(color_space == 444){
+                    } else if (color_space == 444) {
                         UMat.at<uchar>(i,j) = Cbdecoded[pixel_idx2] + UMat.at<uchar>(i, j-1);
                         VMat.at<uchar>(i,j) = Crdecoded[pixel_idx2] + VMat.at<uchar>(i, j-1);
                         pixel_idx2++;
                     }
                     pixel_idx++;
-                } else if(j == 0){
+                } else if (j == 0) {
                     YMat.at<uchar>(i, j) = Ydecoded[pixel_idx] + YMat.at<uchar>(i-1, j);
-                    if(color_space == 420){
-                        if(i < (height/2)){
+                    if (color_space == 420) {
+                        if (i < (height/2)) {
                             UMat.at<uchar>(i,j) = Cbdecoded[pixel_idx2] + UMat.at<uchar>(i-1, j);
                             VMat.at<uchar>(i,j) = Crdecoded[pixel_idx2] + VMat.at<uchar>(i-1, j);
                             pixel_idx2++;
@@ -300,7 +290,7 @@ int main(int argc, char* argv[]){
         }
 
         //write the Y_vector to the file
-        for(int i = 0; i < Y_vector.size(); i++){
+        for(long unsigned int i = 0; i < Y_vector.size(); i++){
             //convert the int to a byte
             char byte = (char)Y_vector[i];
             //write the byte to the file
@@ -308,7 +298,7 @@ int main(int argc, char* argv[]){
         }
 
         //write the Cb_vector to the file
-        for(int i = 0; i < Cb_vector.size(); i++){
+        for(long unsigned int i = 0; i < Cb_vector.size(); i++){
             //convert the int to a byte
             char byte = (char)Cb_vector[i];
             //write the byte to the file
@@ -316,14 +306,14 @@ int main(int argc, char* argv[]){
         }
 
         //write the Cr_vector to the file
-        for(int i = 0; i < Cr_vector.size(); i++){
+        for(long unsigned int i = 0; i < Cr_vector.size(); i++){
             //convert the int to a byte
             char byte = (char)Cr_vector[i];
             //write the byte to the file
             out.write(&byte, sizeof(byte));
         }
-        if(n < num_frames - 1)
-            out << "FRAME" << endl;
+
+        if(n < num_frames - 1) out << "FRAME" << endl;
     }
 
     //end the timer
@@ -333,7 +323,6 @@ int main(int argc, char* argv[]){
 
     //close the file
     out.close();
-    
 
     //end the timer
     clock_t end = clock();

@@ -26,7 +26,7 @@ int main(int argc, char* argv[]){
         return (int) - (1/log((double) u / (1 + u)));
     };
 
-    auto predict = [](int a, int b, int c, int mode) {
+    auto predict = [](int a, int b, int c) {
         if (c >= max(a, b))
             return min(a, b);   //min(left, above) if  left top >= max(left, above)
         else if (c <= min(a, b))
@@ -123,7 +123,7 @@ int main(int argc, char* argv[]){
             }
         }
         if (finish) break;
-        if(colorSpace == 420){
+        if (colorSpace == 420) {
             for(int i = 0; i < width * height / 4; i++) U[i] = fgetc(input); //read the U data (Height/2 x Width/2)
             for(int i = 0; i < width * height / 4; i++) V[i] = fgetc(input); //read the V data (Height/2 x Width/2)
         } else if(colorSpace == 422){
@@ -218,20 +218,20 @@ int main(int argc, char* argv[]){
                     }
                 } else {
                     //otherwise, use the prediction function
-                    Yresiduals.push_back(Y - predict(YMat.at<uchar>(i, j-1), YMat.at<uchar>(i-1, j), YMat.at<uchar>(i-1, j-1), 0));
+                    Yresiduals.push_back(Y - predict(YMat.at<uchar>(i, j-1), YMat.at<uchar>(i-1, j), YMat.at<uchar>(i-1, j-1)));
                     if(colorSpace == 420){
                         if (i < (height/2) && j < (width/2)) {
-                            Cbresiduals.push_back(U - predict(UMat.at<uchar>(i, j-1), UMat.at<uchar>(i-1, j), UMat.at<uchar>(i-1, j-1), 0));
-                            Crresiduals.push_back(V - predict(VMat.at<uchar>(i, j-1), VMat.at<uchar>(i-1, j), VMat.at<uchar>(i-1, j-1), 0));
+                            Cbresiduals.push_back(U - predict(UMat.at<uchar>(i, j-1), UMat.at<uchar>(i-1, j), UMat.at<uchar>(i-1, j-1)));
+                            Crresiduals.push_back(V - predict(VMat.at<uchar>(i, j-1), VMat.at<uchar>(i-1, j), VMat.at<uchar>(i-1, j-1)));
                         }
                     } else if(colorSpace == 422){
                         if (j < (width/2)) {
-                            Cbresiduals.push_back(U - predict(UMat.at<uchar>(i, j-1), UMat.at<uchar>(i-1, j), UMat.at<uchar>(i-1, j-1), 0));
-                            Crresiduals.push_back(V - predict(VMat.at<uchar>(i, j-1), VMat.at<uchar>(i-1, j), VMat.at<uchar>(i-1, j-1), 0));
+                            Cbresiduals.push_back(U - predict(UMat.at<uchar>(i, j-1), UMat.at<uchar>(i-1, j), UMat.at<uchar>(i-1, j-1)));
+                            Crresiduals.push_back(V - predict(VMat.at<uchar>(i, j-1), VMat.at<uchar>(i-1, j), VMat.at<uchar>(i-1, j-1)));
                         }
                     } else if(colorSpace == 444){
-                        Cbresiduals.push_back(U - predict(UMat.at<uchar>(i, j-1), UMat.at<uchar>(i-1, j), UMat.at<uchar>(i-1, j-1), 0));
-                        Crresiduals.push_back(V - predict(VMat.at<uchar>(i, j-1), VMat.at<uchar>(i-1, j), VMat.at<uchar>(i-1, j-1), 0));
+                        Cbresiduals.push_back(U - predict(UMat.at<uchar>(i, j-1), UMat.at<uchar>(i-1, j), UMat.at<uchar>(i-1, j-1)));
+                        Crresiduals.push_back(V - predict(VMat.at<uchar>(i, j-1), VMat.at<uchar>(i-1, j), VMat.at<uchar>(i-1, j-1)));
                     }
                 }   
             }
@@ -249,20 +249,18 @@ int main(int argc, char* argv[]){
             }
         }
         //M VECTOR CALCULATION
-        for(int i = 0; i < Yresiduals.size(); i++){
-            if(i % blockSize == 0 and i != 0){
+        for (long unsigned int i = 0; i < Yresiduals.size(); i++) {
+            if (i % blockSize == 0 and i != 0) {
                 int sum = 0;
-                for(int j = i - blockSize; j < i; j++){
-                    sum += abs(Yresiduals[j]);
-                }
+                for (long unsigned int j = i - blockSize; j < i; j++) sum += abs(Yresiduals[j]);
                 int mean = sum / blockSize;
                 int m = calc_m(mean);
                 if (m == 0) m = 1;
                 Ym_vector.push_back(m);
-                if(i < Cbresiduals.size()){
+                if (i < Cbresiduals.size()) {
                     int sumCb = 0;
                     int sumCr = 0;
-                    for(int j = i - blockSize; j < i; j++){
+                    for (long unsigned int j = i - blockSize; j < i; j++) {
                         sumCb += abs(Cbresiduals[j]);
                         sumCr += abs(Crresiduals[j]);
                     }
@@ -276,21 +274,20 @@ int main(int argc, char* argv[]){
                     Crm_vector.push_back(mCr);
                 }
             }
-            if(i == Yresiduals.size() - 1){
+            if (i == Yresiduals.size() - 1) {
                 int sum = 0;
-                for(int j = i - (i % blockSize); j < i; j++){
-                    sum += abs(Yresiduals[j]);
-                }
+                for (long unsigned int j = i - (i % blockSize); j < i; j++) sum += abs(Yresiduals[j]);
+                
                 int mean = sum / (i % blockSize);
                 int m = calc_m(mean);
                 if (m == 0) m = 1;
                 Ym_vector.push_back(m);
             }
 
-            if(i == Cbresiduals.size() - 1){
+            if (i == Cbresiduals.size() - 1) {
                 int sumCb = 0;
                 int sumCr = 0;
-                for(int j = i - (i % blockSize); j < i; j++){
+                for (long unsigned int j = i - (i % blockSize); j < i; j++) {
                     sumCb += abs(Cbresiduals[j]);
                     sumCr += abs(Crresiduals[j]);
                 }
@@ -304,11 +301,11 @@ int main(int argc, char* argv[]){
                 Crm_vector.push_back(mCr);
             }
         }
+
         Golomb g;
         int m_index = 0;
-        for(int i = 0; i < Yresiduals.size(); i++){
-            
-            if(i % blockSize == 0 and i != 0){
+        for (long unsigned int i = 0; i < Yresiduals.size(); i++) {
+            if (i % blockSize == 0 and i != 0) {
                 Ym.push_back(Ym_vector[m_index]);
                 m_index++;
             }
@@ -316,8 +313,8 @@ int main(int argc, char* argv[]){
             if (i == Yresiduals.size() - 1) Ym.push_back(Ym_vector[m_index]);
         }
         m_index = 0;
-        for(int i = 0; i < Cbresiduals.size(); i++){
-            if(i % blockSize == 0 and i != 0) {
+        for (long unsigned int i = 0; i < Cbresiduals.size(); i++) {
+            if (i % blockSize == 0 and i != 0) {
                 Cbm.push_back(Cbm_vector[m_index]);
                 Crm.push_back(Crm_vector[m_index]);
                 m_index++;
@@ -347,8 +344,6 @@ int main(int argc, char* argv[]){
         Cbencoded = "";
         Crencoded = "";
         // if (numFrames == 4) break;
-        
-
     } //end of loop for each frame
 
     clock_t end2 = clock();
