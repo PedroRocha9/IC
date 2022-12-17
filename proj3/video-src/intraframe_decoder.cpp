@@ -131,6 +131,9 @@ int main(int argc, char* argv[]){
     vector<int> Cbbits = bs.readBits2(Cbbits_size);
     vector<int> Crbits = bs.readBits2(Crbits_size);
 
+    cout << Cbbits_size << endl;
+    cout << Crbits_size << endl;
+
     end2 = clock();
     elapsed_secs2 = double(end2 - start2) / CLOCKS_PER_SEC * 1000;
     cout << "Time to read including YUV values: " << elapsed_secs2 << " ms" << endl;
@@ -144,6 +147,8 @@ int main(int argc, char* argv[]){
     string Crencodedstring = "";
     for(long unsigned int i = 0; i < Cbbits.size(); i++) {
         Cbencodedstring += Cbbits[i] + '0';
+    }
+    for(long unsigned int i = 0; i < Crbits.size(); i++) {
         Crencodedstring += Crbits[i] + '0';
     }
 
