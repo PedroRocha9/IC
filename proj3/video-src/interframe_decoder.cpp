@@ -442,8 +442,14 @@ int main(int argc, char* argv[]){
                             //Getting the current block (predicted)
                             YMat.at<uchar>(bh*blockSize + i, bw*blockSize + j) = keyFrameMat.at<Vec3b>(bh*blockSize + i + motionVectorYs[motionY_idx], bw*blockSize + j + motionVectorXs[motionX_idx])[0] + Ydecoded[pixel_idx];
                             if(n==7){
-                                if ((bh*blockSize + i + motionVectorYs[motionY_idx]) > 287 || (bh*blockSize + i + motionVectorYs[motionY_idx]) < 0) cout << "Fora Y [0-287]: " << (bh*blockSize + i + motionVectorYs[motionY_idx]) << endl;
-                                if ((bw*blockSize + j + motionVectorXs[motionX_idx]) > 351 || (bw*blockSize + j + motionVectorXs[motionX_idx]) < 0) cout << "Fora X [0-351]: " << (bw*blockSize + j + motionVectorXs[motionX_idx]) << endl;
+                                if ((bh*blockSize + i + motionVectorYs[motionY_idx]) > padded_height || (bh*blockSize + i + motionVectorYs[motionY_idx]) < 0){
+                                    cerr << "Error: Motion vector[X] out of bounds [0-" << padded_height << "]: " << (bh*blockSize + i + motionVectorYs[motionY_idx]) << endl;
+                                    return -1;
+                                }
+                                if ((bw*blockSize + j + motionVectorXs[motionX_idx]) > padded_width || (bw*blockSize + j + motionVectorXs[motionX_idx]) < 0){
+                                    cerr << "Error: Motion vector[Y] out of bounds [0-" << padded_width << "]: " << (bw*blockSize + j + motionVectorXs[motionX_idx]) << endl;
+                                    return -1;
+                                }
                                 // cout << bh*blockSize + i + motionVectorYs[motionY_idx] << " " << bw*blockSize + j + motionVectorXs[motionX_idx]<< endl; //VALIDO
                                 // cout << (int)keyFrameMat.at<Vec3b>(bh*blockSize + i + motionVectorYs[motionY_idx], bw*blockSize + j + motionVectorXs[motionX_idx])[0] << endl; //ERRO
                                 // cout << (int)YMat.at<uchar>(bh*blockSize + i, bw*blockSize + j) << endl; 

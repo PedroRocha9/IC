@@ -55,24 +55,35 @@ int main(int argc, char* argv[]){
     int searchDistance = atoi(argv[4]);
     int keyFramePeriod = atoi(argv[5]);
 
-    //check if blocksize is a power of 2
-    if((blockSize & (blockSize - 1)) != 0){
-        cout << "Error: Block size must be a power of 2" << endl;
-        return 1;
-    }
+    // //check if blocksize is a power of 2
+    // if((blockSize & (blockSize - 1)) != 0){
+    //     cout << "Error: Block size must be a power of 2" << endl;
+    //     return 1;
+    // }
 
 
 
     YUV4MPEG2Reader reader(argv[1]);
 
     int width = reader.width();
+    int height = reader.height();
 
+    //Checking inputs
     //check if the blocksize is < width
     if(blockSize > width){
         cout << "Error: Block size must be less than width" << endl;
         return 1;
     }
-    int height = reader.height();
+    if(blockSize + searchDistance > width || blockSize + searchDistance > height){
+        cout << "Error: Search area + block size must be less than width and heigth" << endl;
+        return 1;
+    }
+    if(keyFramePeriod < 1){
+        cout << "Error: Key-frame period must be greater than 0" << endl;
+        return 1;
+    }
+
+    
     int colorSpace = stoi(reader.colorSpace());
     if(colorSpace != 420 && colorSpace != 422 && colorSpace != 444){
         cout << "Error: Color space not supported" << endl;
@@ -319,7 +330,6 @@ int main(int argc, char* argv[]){
             //first thing to do is to create a Mat object for all of the frame, combining the Y, U and V Mat objects
             Mat frame = Mat(padded_height, padded_width, CV_8UC3);
             Mat keyFrameMat = Mat(padded_height, padded_width, CV_8UC3);
-            Mat residualFrame = Mat(padded_height, padded_width, CV_8UC3);
             //colorspace 420
             for (int i = 0; i < padded_height; i++){
                 for (int j = 0; j < padded_width; j++){
@@ -334,18 +344,6 @@ int main(int argc, char* argv[]){
                 }
             }
             
-            
-            // if(frameIndex == 7){
-            //     // cvtColor(frame, frame, COLOR_YUV2BGR);
-            //     // imwrite("frame289.jpg", frame);
-            //     //cout the keyFrameMat
-            //     for(int i = 0; i < height; i++){
-            //         for(int j = 0; j < width; j++){
-            //             // cout << (int)keyFrameMat.at<Vec3b>(i, j)[0] << endl;
-            //         }
-            //     }
-            // }
-
             
 
             //current Y, Cb and Cr block
@@ -388,7 +386,7 @@ int main(int argc, char* argv[]){
                     int minSum = 1000000000;
                     for (int i = bh*blockSize - searchDistance; i <= bh*blockSize + searchDistance; i++){
                         for (int j = bw*blockSize - searchDistance; j <= bw*blockSize + searchDistance; j++){
-                            if(i < 0 || j < 0 || i + blockSize > height || j + blockSize > width) continue;
+                            if(i < 0 || j < 0 || i + blockSize > padded_height || j + blockSize > padded_width) continue;
                             Mat ref_block = keyFrameMat(Rect(j, i, blockSize, blockSize));
                             int sum = 0;
                             for (int k = 0; k < blockSize; k++){
