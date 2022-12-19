@@ -335,16 +335,16 @@ int main(int argc, char* argv[]){
             }
             
             
-            if(frameIndex == 7){
-                // cvtColor(frame, frame, COLOR_YUV2BGR);
-                // imwrite("frame289.jpg", frame);
-                //cout the keyFrameMat
-                for(int i = 0; i < height; i++){
-                    for(int j = 0; j < width; j++){
-                        // cout << (int)keyFrameMat.at<Vec3b>(i, j)[0] << endl;
-                    }
-                }
-            }
+            // if(frameIndex == 7){
+            //     // cvtColor(frame, frame, COLOR_YUV2BGR);
+            //     // imwrite("frame289.jpg", frame);
+            //     //cout the keyFrameMat
+            //     for(int i = 0; i < height; i++){
+            //         for(int j = 0; j < width; j++){
+            //             // cout << (int)keyFrameMat.at<Vec3b>(i, j)[0] << endl;
+            //         }
+            //     }
+            // }
 
             
 
@@ -430,16 +430,6 @@ int main(int argc, char* argv[]){
                         }
                     }
                     block_index++;
-                }
-            }
-            if(frameIndex == 7){
-                // cvtColor(frame, frame, COLOR_YUV2BGR);
-                // imwrite("frame289.jpg", frame);
-                //cout the keyFrameMat
-                for(int i = 0; i < height; i++){
-                    for(int j = 0; j < width; j++){
-                        cout << (int)keyFrameMat.at<Vec3b>(i, j)[0] << endl;
-                    }
                 }
             }
         }
@@ -562,7 +552,7 @@ int main(int argc, char* argv[]){
 
     clock_t end2 = clock();
     double elapsed_secs2 = double(end2 - start2) / CLOCKS_PER_SEC * 1000;
-    // cout << "Time to read, predict and encode YUV values (and m) from frame: " << elapsed_secs2 << " ms" << endl;
+    cout << "Time to read, predict and encode YUV values (and m) from frame: " << elapsed_secs2 << " ms" << endl;
 
     BitStream bs(argv[2], "w");
     vector<int> bits;
@@ -608,19 +598,19 @@ int main(int argc, char* argv[]){
 
     end2 = clock();
     elapsed_secs2 = double(end2 - start2) / CLOCKS_PER_SEC * 1000;
-    // cout << "Time to push back all values to bits: " << elapsed_secs2 << " ms" << endl;
+    cout << "Time to push back all values to bits: " << elapsed_secs2 << " ms" << endl;
     start2 = clock();
     
     bs.writeBits(bits);
     bs.close();
     end2 = clock();
     elapsed_secs2 = double(end2 - start2) / CLOCKS_PER_SEC * 1000;
-    // cout << "Time to write to bits: " << elapsed_secs2 << " ms" << endl;
+    cout << "Time to write to bits: " << elapsed_secs2 << " ms" << endl;
 
     //end the timer
     clock_t end = clock();
     double elapsed_secs = double(end - start) / CLOCKS_PER_SEC;
     elapsed_secs = elapsed_secs * 1000;
-    // cout << "Execution time: " << elapsed_secs << " ms" << endl;
+    cout << "Execution time: " << elapsed_secs << " ms" << endl;
     return 0;
 }

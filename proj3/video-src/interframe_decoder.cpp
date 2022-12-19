@@ -144,7 +144,7 @@ int main(int argc, char* argv[]){
     //end the timer
     clock_t end2 = clock();
     double elapsed_secs2 = double(end2 - start2) / CLOCKS_PER_SEC * 1000;
-    // cout << "Time to read header including m: " << elapsed_secs2 << " ms" << endl;
+    cout << "Time to read header including m: " << elapsed_secs2 << " ms" << endl;
 
     //start the timer
     start2 = clock();
@@ -156,7 +156,7 @@ int main(int argc, char* argv[]){
 
     end2 = clock();
     elapsed_secs2 = double(end2 - start2) / CLOCKS_PER_SEC * 1000;
-    // cout << "Time to read including YUV values: " << elapsed_secs2 << " ms" << endl;
+    cout << "Time to read including YUV values: " << elapsed_secs2 << " ms" << endl;
 
     //start the timer
     start2 = clock();
@@ -175,7 +175,7 @@ int main(int argc, char* argv[]){
     //end the timer
     end2 = clock();
     elapsed_secs2 = double(end2 - start2) / CLOCKS_PER_SEC * 1000;
-    // cout << "Time to parse YUV values: " << elapsed_secs2 << " ms" << endl;
+    cout << "Time to parse YUV values: " << elapsed_secs2 << " ms" << endl;
     //start the timer
     start2 = clock();
 
@@ -203,7 +203,7 @@ int main(int argc, char* argv[]){
     //end the timer
     end2 = clock();
     elapsed_secs2 = double(end2 - start2) / CLOCKS_PER_SEC * 1000;
-    // cout << "Time to decode YUV values: " << elapsed_secs2 << " ms" << endl;
+    cout << "Time to decode YUV values: " << elapsed_secs2 << " ms" << endl;
 
     //start the timer
     start2 = clock();
@@ -523,7 +523,7 @@ int main(int argc, char* argv[]){
     //end the timer
     end2 = clock();
     elapsed_secs2 = double(end2 - start2) / CLOCKS_PER_SEC * 1000;
-    // cout << "Time to undo the predictions and write to file: " << elapsed_secs2 << " ms" << endl;
+    cout << "Time to undo the predictions and write to file: " << elapsed_secs2 << " ms" << endl;
 
     //close the file
     out.close();
@@ -533,6 +533,6 @@ int main(int argc, char* argv[]){
     double elapsed_secs = double(end - start) / CLOCKS_PER_SEC;
     //convert the time to milliseconds
     elapsed_secs = elapsed_secs * 1000;
-    // cout << "Execution time: " << elapsed_secs << " ms" << endl;
+    cout << "Execution time: " << elapsed_secs << " ms" << endl;
     return 0;
 }
