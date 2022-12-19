@@ -16,5 +16,11 @@ SET (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BASE_DIR}/../video-bin)
 add_executable (intraframe_encoder intraframe_encoder.cpp)
 target_link_libraries (intraframe_encoder ${OpenCV_LIBS})
 
+add_executable (interframe_encoder interframe_encoder.cpp)
+target_link_libraries (interframe_encoder ${OpenCV_LIBS})
+
 add_executable (intraframe_decoder intraframe_decoder.cpp)
 target_link_libraries (intraframe_decoder ${OpenCV_LIBS}) 
+
+add_executable (interframe_decoder interframe_decoder.cpp)
+target_link_libraries (interframe_decoder ${OpenCV_LIBS})  
