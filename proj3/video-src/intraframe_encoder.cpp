@@ -50,12 +50,6 @@ int main(int argc, char* argv[]){
 
     int blockSize = atoi(argv[3]);
 
-    //check if blocksize is a power of 2
-    // if((blockSize & (blockSize - 1)) != 0){
-    //     cout << "Error: Block size must be a power of 2" << endl;
-    //     return 1;
-    // }
-
     YUV4MPEG2Reader reader(argv[1]);
 
     int width = reader.width();
