@@ -47,6 +47,19 @@ public:
             // extract the second number
             aspect_ratio_2_ = std::stoi(aspect_ratio.substr(aspect_ratio.find(':') + 1));
         }
+
+        // count the number of frames
+        num_frames_ = 0;
+        while (std::getline(file_, line)) {
+            if (line.find("FRAME") != std::string::npos) {
+                num_frames_++;
+            }
+        }
+    }
+
+    // Returns the number of frames in the file.
+    int numFrames() const {
+        return num_frames_;
     }
 
     // Returns the width of the frame.
@@ -97,5 +110,7 @@ private:
     int aspect_ratio_2_;
     int frame_rate_1_;
     int frame_rate_2_;
+    int num_frames_;
     std::string color_space_;
+    std::chrono::duration<double> elapsed_;
 };

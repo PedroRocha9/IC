@@ -24,3 +24,12 @@ target_link_libraries (intraframe_decoder ${OpenCV_LIBS})
 
 add_executable (interframe_decoder interframe_decoder.cpp)
 target_link_libraries (interframe_decoder ${OpenCV_LIBS})  
+
+add_executable (lossy_intra_encoder lossy_intra_encoder.cpp)
+target_link_libraries (lossy_intra_encoder ${OpenCV_LIBS})
+
+add_executable (lossy_intra_decoder lossy_intra_decoder.cpp)
+target_link_libraries (lossy_intra_decoder ${OpenCV_LIBS}) 
+
+# add_executable (video_cmp video_cmp.cpp)
+# target_link_libraries (video_cmp ${OpenCV_LIBS})
