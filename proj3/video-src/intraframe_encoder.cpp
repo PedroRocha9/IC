@@ -51,22 +51,21 @@ int main(int argc, char* argv[]){
     int blockSize = atoi(argv[3]);
 
     //check if blocksize is a power of 2
-    if((blockSize & (blockSize - 1)) != 0){
-        cout << "Error: Block size must be a power of 2" << endl;
-        return 1;
-    }
-
-
+    // if((blockSize & (blockSize - 1)) != 0){
+    //     cout << "Error: Block size must be a power of 2" << endl;
+    //     return 1;
+    // }
 
     YUV4MPEG2Reader reader(argv[1]);
 
     int width = reader.width();
 
-    //check if the blocksize is < width
+    // Warn that since the block size is greater than the width it will be used the image's width
     if(blockSize > width){
-        cout << "Error: Block size must be less than width" << endl;
-        return 1;
+        cout << "Warning: Since block size is greater than the width it will be used the image's width!" << endl;
+        blockSize = width;
     }
+
     int height = reader.height();
     int colorSpace = stoi(reader.colorSpace());
     if(colorSpace != 420 && colorSpace != 422 && colorSpace != 444){
@@ -247,11 +246,13 @@ int main(int argc, char* argv[]){
 
         //PADDING TO VECTORS
         if (Yresiduals.size() % blockSize != 0) {
+            cout << "Padding Yresiduals" << endl;
             int padding = blockSize - (Yresiduals.size() % blockSize);
             for (int i = 0; i < padding; i++) Yresiduals.push_back(0);
         }
         if (Cbresiduals.size() % blockSize != 0) {
             int padding = blockSize - (Cbresiduals.size() % blockSize);
+            cout << "Padding Cbresiduals" << endl;
             for (int i = 0; i < padding; i++) {
                 Cbresiduals.push_back(0);
                 Crresiduals.push_back(0);
@@ -373,7 +374,7 @@ int main(int argc, char* argv[]){
     for (int i = 15; i >= 0; i--) bits.push_back((frameRate1 >> i) & 1);    //the next 16 bits are the frame rate 1
     for (int i = 15; i >= 0; i--) bits.push_back((frameRate2 >> i) & 1);    //the next 16 bits are the frame rate 2
     for (int i = 0;  i <  8; i++) bits.push_back(interlace_v[i]);           //the next 8 bits are the interlace vector el
-    for (int i = 7;  i >= 0; i--) bits.push_back((blockSize >> i) & 1);     //the next 8 bits are the block size
+    for (int i = 15;  i >= 0; i--) bits.push_back((blockSize >> i) & 1);     //the next 16 bits are the block size
     for (int i = 31; i >= 0; i--) bits.push_back((encoded_Ybits.size() >> i) & 1);  //the next 32 bits are the encoded_Ybits.size()
     for (int i = 31; i >= 0; i--) bits.push_back((encoded_Cbbits.size() >> i) & 1); //the next 32 bits are the encoded_Cbbits.size()
     for (int i = 31; i >= 0; i--) bits.push_back((encoded_Crbits.size() >> i) & 1); //the next 32 bits are the encoded_Crbits.size()

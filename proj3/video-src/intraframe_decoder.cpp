@@ -60,7 +60,7 @@ int main(int argc, char* argv[]){
     vector<int> v_frame_rate_1 = bs.readBits(16);
     vector<int> v_frame_rate_2 = bs.readBits(16);
     vector<int> v_interlace = bs.readBits(8);
-    vector<int> v_bs = bs.readBits(8);
+    vector<int> v_bs = bs.readBits(16);
     vector<int> v_Ybits_size = bs.readBits(32);
     vector<int> v_Cbbits_size = bs.readBits(32);
     vector<int> v_Crbits_size = bs.readBits(32);
@@ -127,9 +127,9 @@ int main(int argc, char* argv[]){
     start2 = clock();
 
     //READING YUV VALUES
-    vector<int> Ybits = bs.readBits2(Ybits_size);
-    vector<int> Cbbits = bs.readBits2(Cbbits_size);
-    vector<int> Crbits = bs.readBits2(Crbits_size);
+    vector<int> Ybits = bs.readBits(Ybits_size);
+    vector<int> Cbbits = bs.readBits(Cbbits_size);
+    vector<int> Crbits = bs.readBits(Crbits_size);
 
     cout << Cbbits_size << endl;
     cout << Crbits_size << endl;
