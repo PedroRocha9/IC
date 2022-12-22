@@ -55,14 +55,14 @@ int main(int argc, char* argv[]){
     int width = reader.width();
 
     // Warn that since the block size is greater than the width it will be used the image's width
-    if(blockSize > width){
-        cout << "Warning: Since block size is greater than the width it will be used the image's width!" << endl;
+    if( blockSize > width) {
+        cout << "Warning: Since block size is greater than the width, using block size equal to " << width << endl;
         blockSize = width;
     }
 
     int height = reader.height();
     int colorSpace = stoi(reader.colorSpace());
-    if(colorSpace != 420 && colorSpace != 422 && colorSpace != 444){
+    if (colorSpace != 420 && colorSpace != 422 && colorSpace != 444) {
         cout << "Error: Color space not supported" << endl;
         return 1;
     }
@@ -403,6 +403,6 @@ int main(int argc, char* argv[]){
     clock_t end = clock();
     double elapsed_secs = double(end - start) / CLOCKS_PER_SEC;
     elapsed_secs = elapsed_secs * 1000;
-    //cout << "Execution time: " << elapsed_secs << " ms" << endl;
+    cout << "Execution time: " << elapsed_secs << " ms" << endl;
     return 0;
 }
