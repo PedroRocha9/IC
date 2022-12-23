@@ -123,7 +123,8 @@ int main(int argc, char* argv[]){
         fgets(line, 100, input);
         //read the Y data  (Height x Width)
         for(int i = 0; i < width * height; i++){
-            Y[i] = fgetc(input);   
+            Y[i] = fgetc(input);  
+            // if(numFrames == 1 and i < 1000)  cout << Y[i] << endl;
             if(Y[i] < 0) {
                 numFrames--;
                 finish = true;
@@ -207,6 +208,9 @@ int main(int argc, char* argv[]){
                         if (j < (width/2)) {
                             Cbresiduals.push_back(U - UMat.at<uchar>(i, j-1));
                             Crresiduals.push_back(V - VMat.at<uchar>(i, j-1));
+                            int error = V - VMat.at<uchar>(i, j-1);
+                            // if (numFrames==1) cout << error << " = " << V << " - " << (int)VMat.at<uchar>(i, j-1) << endl;
+
                         }
                     } else if(colorSpace == 444){
                         Cbresiduals.push_back(U - UMat.at<uchar>(i, j-1));
@@ -229,8 +233,10 @@ int main(int argc, char* argv[]){
                     Yresiduals.push_back(Y - predict(YMat.at<uchar>(i, j-1), YMat.at<uchar>(i-1, j), YMat.at<uchar>(i-1, j-1)));
                     if(colorSpace == 420){
                         if (i < (height/2) && j < (width/2)) {
+                            
                             Cbresiduals.push_back(U - predict(UMat.at<uchar>(i, j-1), UMat.at<uchar>(i-1, j), UMat.at<uchar>(i-1, j-1)));
                             Crresiduals.push_back(V - predict(VMat.at<uchar>(i, j-1), VMat.at<uchar>(i-1, j), VMat.at<uchar>(i-1, j-1)));
+                            int error = V - predict(VMat.at<uchar>(i, j-1), VMat.at<uchar>(i-1, j), VMat.at<uchar>(i-1, j-1));
                         }
                     } else if(colorSpace == 422){
                         if (j < (width/2)) {
@@ -247,13 +253,13 @@ int main(int argc, char* argv[]){
 
         //PADDING TO VECTORS
         if (Yresiduals.size() % blockSize != 0) {
-            cout << "Padding Yresiduals" << endl;
+            // cout << "Padding Yresiduals" << endl;
             int padding = blockSize - (Yresiduals.size() % blockSize);
             for (int i = 0; i < padding; i++) Yresiduals.push_back(0);
         }
         if (Cbresiduals.size() % blockSize != 0) {
             int padding = blockSize - (Cbresiduals.size() % blockSize);
-            cout << "Padding Cbresiduals" << endl;
+            // cout << "Padding Cbresiduals" << endl;
             for (int i = 0; i < padding; i++) {
                 Cbresiduals.push_back(0);
                 Crresiduals.push_back(0);
@@ -264,6 +270,7 @@ int main(int argc, char* argv[]){
         for (long unsigned int i = 0; i < Yresiduals.size(); i++) {
             Yresiduals[i] = Yresiduals[i] >> quantization;
             if (i < Cbresiduals.size()) {
+                // if(numFrames == 1 and i < 1000) cout << Crresiduals[i] << endl;
                 Cbresiduals[i] = Cbresiduals[i] >> quantization;
                 Crresiduals[i] = Crresiduals[i] >> quantization;
             }
@@ -369,7 +376,7 @@ int main(int argc, char* argv[]){
 
     clock_t end2 = clock();
     double elapsed_secs2 = double(end2 - start2) / CLOCKS_PER_SEC * 1000;
-    cout << "Time to read, predict and encode YUV values (and m) from frame: " << elapsed_secs2 << " ms" << endl;
+    // cout << "Time to read, predict and encode YUV values (and m) from frame: " << elapsed_secs2 << " ms" << endl;
 
     BitStream bs(argv[2], "w");
     vector<int> bits;
@@ -408,19 +415,19 @@ int main(int argc, char* argv[]){
 
     end2 = clock();
     elapsed_secs2 = double(end2 - start2) / CLOCKS_PER_SEC * 1000;
-    cout << "Time to push back all values to bits: " << elapsed_secs2 << " ms" << endl;
+    // cout << "Time to push back all values to bits: " << elapsed_secs2 << " ms" << endl;
     start2 = clock();
     
     bs.writeBits(bits);
     bs.close();
     end2 = clock();
     elapsed_secs2 = double(end2 - start2) / CLOCKS_PER_SEC * 1000;
-    cout << "Time to write to bits: " << elapsed_secs2 << " ms" << endl;
+    // cout << "Time to write to bits: " << elapsed_secs2 << " ms" << endl;
 
     //end the timer
     clock_t end = clock();
     double elapsed_secs = double(end - start) / CLOCKS_PER_SEC;
     elapsed_secs = elapsed_secs * 1000;
-    cout << "Execution time: " << elapsed_secs << " ms" << endl;
+    // cout << "Execution time: " << elapsed_secs << " ms" << endl;
     return 0;
 }

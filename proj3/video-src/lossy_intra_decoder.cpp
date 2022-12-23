@@ -133,9 +133,6 @@ int main(int argc, char* argv[]){
     vector<int> Cbbits = bs.readBits(Cbbits_size);
     vector<int> Crbits = bs.readBits(Crbits_size);
 
-    cout << Cbbits_size << endl;
-    cout << Crbits_size << endl;
-
     end2 = clock();
     elapsed_secs2 = double(end2 - start2) / CLOCKS_PER_SEC * 1000;
     cout << "Time to read including YUV values: " << elapsed_secs2 << " ms" << endl;
@@ -184,10 +181,35 @@ int main(int argc, char* argv[]){
 
     //undo the quantization of YUV decoded values back to the original size
     for (int i = 0; i < Ydecoded.size(); i++){
-        Ydecoded[i] = Ydecoded[i] * quantization;
+        if(quantization != 1){
+            Ydecoded[i] = Ydecoded[i] << 1;
+            Ydecoded[i] = Ydecoded[i] | 1;
+            Ydecoded[i] = Ydecoded[i] << (quantization - 1);
+        }else{
+            //int random is a random value of 0 or 1
+            int random = rand() % 2;
+            Ydecoded[i] = Ydecoded[i] << 1;
+            Ydecoded[i] = Ydecoded[i] | random;
+        }
+
         if (i < Cbdecoded.size()){
-            Cbdecoded[i] = Cbdecoded[i] * quantization;
-            Crdecoded[i] = Crdecoded[i] * quantization;
+            if(quantization != 1){
+                Cbdecoded[i] = Cbdecoded[i] << 1;
+                Cbdecoded[i] = Cbdecoded[i] | 1;
+                Cbdecoded[i] = Cbdecoded[i] << (quantization - 1);
+                
+                Crdecoded[i] = Crdecoded[i] << 1;
+                Crdecoded[i] = Crdecoded[i] | 1;
+                Crdecoded[i] = Crdecoded[i] << (quantization - 1);
+            }else{
+                //int random is a random value of 0 or 1
+                int random = rand() % 2;
+                Cbdecoded[i] = Cbdecoded[i] << 1;
+                Cbdecoded[i] = Cbdecoded[i] | random;
+                Crdecoded[i] = Crdecoded[i] << 1;
+                Crdecoded[i] = Crdecoded[i] | random;
+
+            }
         }
     }
     
@@ -227,11 +249,20 @@ int main(int argc, char* argv[]){
                     pixel_idx++;
                     pixel_idx2++;
                 } else if (i == 0) {
-                    YMat.at<uchar>(i, j) = Ydecoded[pixel_idx] + YMat.at<uchar>(i, j-1);
+                    int value = Ydecoded[pixel_idx] + YMat.at<uchar>(i, j-1);
+                    if (value < 0) value = 0;
+                    if (value > 255) value = 255;
+                    YMat.at<uchar>(i, j) = value;
                     if (color_space == 420 || color_space == 422) {
                         if (j < (width/2)) {
-                            UMat.at<uchar>(i,j) = Cbdecoded[pixel_idx2] + UMat.at<uchar>(i, j-1);
-                            VMat.at<uchar>(i,j) = Crdecoded[pixel_idx2] + VMat.at<uchar>(i, j-1);
+                            int value = Cbdecoded[pixel_idx2] + UMat.at<uchar>(i, j-1);
+                            if (value < 0) value = 0;
+                            if (value > 255) value = 255;
+                            UMat.at<uchar>(i,j) = value;
+                            value = Crdecoded[pixel_idx2] + VMat.at<uchar>(i, j-1);
+                            if (value < 0) value = 0;
+                            if (value > 255) value = 255;
+                            VMat.at<uchar>(i,j) = value;
                             pixel_idx2++;
                         }
                     } else if (color_space == 444) {
@@ -241,11 +272,20 @@ int main(int argc, char* argv[]){
                     }
                     pixel_idx++;
                 } else if (j == 0) {
-                    YMat.at<uchar>(i, j) = Ydecoded[pixel_idx] + YMat.at<uchar>(i-1, j);
+                    int value = Ydecoded[pixel_idx] + YMat.at<uchar>(i-1, j);
+                    if (value < 0) value = 0;
+                    if (value > 255) value = 255;
+                    YMat.at<uchar>(i, j) = value;
                     if (color_space == 420) {
                         if (i < (height/2)) {
-                            UMat.at<uchar>(i,j) = Cbdecoded[pixel_idx2] + UMat.at<uchar>(i-1, j);
-                            VMat.at<uchar>(i,j) = Crdecoded[pixel_idx2] + VMat.at<uchar>(i-1, j);
+                            int value = Cbdecoded[pixel_idx2] + UMat.at<uchar>(i-1, j);
+                            if (value < 0) value = 0;
+                            if (value > 255) value = 255;
+                            UMat.at<uchar>(i,j) = value;
+                            value = Crdecoded[pixel_idx2] + VMat.at<uchar>(i-1, j);
+                            if (value < 0) value = 0;
+                            if (value > 255) value = 255;
+                            VMat.at<uchar>(i,j) = value;
                             pixel_idx2++;
                         }
                     } else if(color_space == 422 || color_space == 444){
@@ -255,11 +295,20 @@ int main(int argc, char* argv[]){
                     }
                     pixel_idx++;
                 } else {
-                    YMat.at<uchar>(i, j) = Ydecoded[pixel_idx] + predict(YMat.at<uchar>(i, j-1), YMat.at<uchar>(i-1, j), YMat.at<uchar>(i-1, j-1));
+                    int value = Ydecoded[pixel_idx] + predict(YMat.at<uchar>(i, j-1), YMat.at<uchar>(i-1, j), YMat.at<uchar>(i-1, j-1));
+                    if(value < 0) value = 0;
+                    if(value > 255) value = 255;
+                    YMat.at<uchar>(i, j) = value;
                     if(color_space == 420){
                         if(i < (height/2) && j < (width/2)){
-                            UMat.at<uchar>(i,j) = Cbdecoded[pixel_idx2] + predict(UMat.at<uchar>(i, j-1), UMat.at<uchar>(i-1, j), UMat.at<uchar>(i-1, j-1));
-                            VMat.at<uchar>(i,j) = Crdecoded[pixel_idx2] + predict(VMat.at<uchar>(i, j-1), VMat.at<uchar>(i-1, j), VMat.at<uchar>(i-1, j-1));
+                            int value = Cbdecoded[pixel_idx2] + predict(UMat.at<uchar>(i, j-1), UMat.at<uchar>(i-1, j), UMat.at<uchar>(i-1, j-1));
+                            if(value < 0) value = 0;
+                            if(value > 255) value = 255;
+                            UMat.at<uchar>(i,j) = value;
+                            value = Crdecoded[pixel_idx2] + predict(VMat.at<uchar>(i, j-1), VMat.at<uchar>(i-1, j), VMat.at<uchar>(i-1, j-1));
+                            if(value < 0) value = 0;
+                            if(value > 255) value = 255;
+                            VMat.at<uchar>(i,j) = value;
                             pixel_idx2++;
                         }
                     } else if(color_space == 422){
