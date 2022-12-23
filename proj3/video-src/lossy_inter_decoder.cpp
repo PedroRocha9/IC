@@ -208,31 +208,31 @@ int main(int argc, char* argv[]){
             }
         }
     }
-    frameIndex = 0;
-    total = (padded_height/2)*(padded_width/2);
-    for(int i = 0; i < Cbdecoded.size(); i++){
-        if (i % total == 0 and i != 0) {
-                frameIndex++;
-        }
-        if((frameIndex !=0) && (frameIndex % keyFramePeriod != 0)){
-            if(quantization != 1){
-                Cbdecoded[i] = Cbdecoded[i] << 1;
-                Cbdecoded[i] = Cbdecoded[i] | 1;
-                Cbdecoded[i] = Cbdecoded[i] << (quantization - 1);
-                Crdecoded[i] = Crdecoded[i] << 1;
-                Crdecoded[i] = Crdecoded[i] | 1;
-                Crdecoded[i] = Crdecoded[i] << (quantization - 1);
-            }else{
-                //int random is a random value of 0 or 1
-                int random = rand() % 2;
-                Cbdecoded[i] = Cbdecoded[i] << 1;
-                Cbdecoded[i] = Cbdecoded[i] | random;
-                Crdecoded[i] = Crdecoded[i] << 1;
-                Crdecoded[i] = Crdecoded[i] | random;
-            }
-        }
+    // frameIndex = 0;
+    // total = (padded_height/2)*(padded_width/2);
+    // for(int i = 0; i < Cbdecoded.size(); i++){
+    //     if (i % total == 0 and i != 0) {
+    //             frameIndex++;
+    //     }
+    //     if((frameIndex !=0) && (frameIndex % keyFramePeriod != 0)){
+    //         if(quantization != 1){
+    //             Cbdecoded[i] = Cbdecoded[i] << 1;
+    //             Cbdecoded[i] = Cbdecoded[i] | 1;
+    //             Cbdecoded[i] = Cbdecoded[i] << (quantization - 1);
+    //             Crdecoded[i] = Crdecoded[i] << 1;
+    //             Crdecoded[i] = Crdecoded[i] | 1;
+    //             Crdecoded[i] = Crdecoded[i] << (quantization - 1);
+    //         }else{
+    //             //int random is a random value of 0 or 1
+    //             int random = rand() % 2;
+    //             Cbdecoded[i] = Cbdecoded[i] << 1;
+    //             Cbdecoded[i] = Cbdecoded[i] | random;
+    //             Crdecoded[i] = Crdecoded[i] << 1;
+    //             Crdecoded[i] = Crdecoded[i] | random;
+    //         }
+    //     }
 
-    }
+    // }
 
     Mat YMat = Mat(height, width, CV_8UC1);
     Mat UMat;

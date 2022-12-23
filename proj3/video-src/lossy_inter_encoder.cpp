@@ -502,10 +502,10 @@ int main(int argc, char* argv[]){
                 Crm.push_back(Crm_vector[m_index]);
                 m_index++;
             }
-            if((frameIndex !=0) && (frameIndex % keyFramePeriod != 0)){
-                Cbresiduals[i] = Cbresiduals[i] >> quantization;
-                Crresiduals[i] = Crresiduals[i] >> quantization;
-            }
+            // if((frameIndex !=0) && (frameIndex % keyFramePeriod != 0)){
+            //     Cbresiduals[i] = Cbresiduals[i] >> quantization;
+            //     Crresiduals[i] = Crresiduals[i] >> quantization;
+            // }
 
             Cbencoded += g.encode(Cbresiduals[i], Cbm_vector[m_index]);
             Crencoded += g.encode(Crresiduals[i], Crm_vector[m_index]);
