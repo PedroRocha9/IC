@@ -1,6 +1,6 @@
 import subprocess
 
-VIDEO_FILES = ['../video-files/stefan_sif.y4m', '../video-files/students_qcif.y4m', '../video-files/akiyo_cif.y4m']     # 3 values
+VIDEO_FILES = ['../video-files/garden_sif.y4m', '../video-files/students_qcif.y4m', '../video-files/akiyo_cif.y4m']     # 3 values
 BS_VALUES = [16, 32, 64, 128, 256, 512]               # 7 values
 idx = 0
 
