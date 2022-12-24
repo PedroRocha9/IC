@@ -39,8 +39,8 @@ int main(int argc, char* argv[]){
     };
 
     //Check for correct number of arguments
-    if(argc != 6){
-        cout << "Usage: " << argv[0] << " <input file> <output file> <block size> <search area> <key-frame period>" << endl;
+    if(argc != 7){
+        cout << "Usage: " << argv[0] << " <input file> <output file> <block size> <search area> <key-frame period> <quantization>" << endl;
         return 1;
     }
 
@@ -54,6 +54,7 @@ int main(int argc, char* argv[]){
     int blockSize = atoi(argv[3]);
     int searchDistance = atoi(argv[4]);
     int keyFramePeriod = atoi(argv[5]);
+    int quantization = atoi(argv[6]);
 
     // //check if blocksize is a power of 2
     // if((blockSize & (blockSize - 1)) != 0){
@@ -413,16 +414,9 @@ int main(int argc, char* argv[]){
                             int errorCb = frame.at<Vec3b>(bh*blockSize + i, bw*blockSize + j)[1] - keyFrameMat.at<Vec3b>(bh*blockSize + i + motionVectorY, bw*blockSize + j + motionVectorX)[1];
                             int errorCr = frame.at<Vec3b>(bh*blockSize + i, bw*blockSize + j)[2] - keyFrameMat.at<Vec3b>(bh*blockSize + i + motionVectorY, bw*blockSize + j + motionVectorX)[2];
                             Yresiduals.push_back(errorY);
-                            if(frameIndex==16) {
-                                // cout << bh*blockSize + i + motionVectorY << " " << bw*blockSize + j + motionVectorX << endl; //VALIDO
-                                // cout << (int)keyFrameMat.at<Vec3b>(bh*blockSize + i + motionVectorY, bw*blockSize + j + motionVectorX)[0] << endl; //ERRO
-                                // cout << errorY << endl;
-                            }
-                            
                             //only save the Cb and Cr residuals every 2 pixels 
                             if (i % 2 == 0 and j % 2 == 0){
                                 Cbresiduals.push_back(errorCb);
-                                // if(frameIndex == 289) cout << (int)keyFrameMat.at<Vec3b>(bh*blockSize + i + motionVectorY, bw*blockSize + j + motionVectorX)[1] << endl;
                                 Crresiduals.push_back(errorCr);
                             }
                         }
@@ -487,10 +481,14 @@ int main(int argc, char* argv[]){
 
         Golomb g;
         int m_index = 0;
+        bool keyFrame = false;
         for (long unsigned int i = 0; i < Yresiduals.size(); i++) {
             if (i % blockSize == 0 and i != 0) {
                 Ym.push_back(Ym_vector[m_index]);
                 m_index++;
+            }
+            if((frameIndex !=0) && (frameIndex % keyFramePeriod != 0)){
+                Yresiduals[i] = Yresiduals[i] >> quantization;
             }
             Yencoded += g.encode(Yresiduals[i], Ym_vector[m_index]);
             if (i == Yresiduals.size() - 1) {
@@ -504,6 +502,11 @@ int main(int argc, char* argv[]){
                 Crm.push_back(Crm_vector[m_index]);
                 m_index++;
             }
+            // if((frameIndex !=0) && (frameIndex % keyFramePeriod != 0)){
+            //     Cbresiduals[i] = Cbresiduals[i] >> quantization;
+            //     Crresiduals[i] = Crresiduals[i] >> quantization;
+            // }
+
             Cbencoded += g.encode(Cbresiduals[i], Cbm_vector[m_index]);
             Crencoded += g.encode(Crresiduals[i], Crm_vector[m_index]);
             if (i == Cbresiduals.size() - 1) {
@@ -568,6 +571,7 @@ int main(int argc, char* argv[]){
     for (int i = 0;  i <  8; i++) bits.push_back(interlace_v[i]);                       //the next 8 bits are the interlace vector el
     for (int i = 15;  i >= 0; i--) bits.push_back((blockSize >> i) & 1);                 //the next 8 bits are the block size
     for (int i = 15; i >= 0; i--) bits.push_back((searchDistance >> i) & 1);            //the next 16 bits are the searchDistance
+    for (int i = 15; i >= 0; i--) bits.push_back((quantization >> i) & 1);              //the next 16 bits are the quantization
     for (int i = 15; i >= 0; i--) bits.push_back((keyFramePeriod >> i) & 1);            //the next 16 bits are the keyFramePeriod
     for (int i = 15; i >= 0; i--) bits.push_back((padded_width >> i) & 1);              //the next 16 bits are the padded_width
     for (int i = 15; i >= 0; i--) bits.push_back((padded_height >> i) & 1);             //the next 16 bits are the padded_height
