@@ -28,12 +28,21 @@ using namespace cv;
 int main(int argc, char *argv[]) {
 
     if (argc != 3) {
-        cout << "Usage: " << argv[0] << " input_file1 input_file2" << endl;
+        cout << "Usage: " << argv[0] << " <original input file> <reconstructed input file>" << endl;
         return 1;
     }
 
     YUV4MPEG2Reader video1(argv[1]);
     YUV4MPEG2Reader video2(argv[2]);
+
+    int width1 = video1.width();
+    int height1 = video1.height();
+
+    int width2 = video2.width();
+    int height2 = video2.height();
+
+    FILE* input1 = fopen(argv[1], "r");
+    FILE* input2 = fopen(argv[2], "r");
 
     // check if the two videos have the same size
     if (video1.width() != video2.width() || video1.height() != video2.height()) {
@@ -42,6 +51,9 @@ int main(int argc, char *argv[]) {
         cout << "Video 2 has: " << video2.width() << "x" << video2.height() << endl;
         return 1;
     }
+
+    //start a timer
+    clock_t start = clock();
 
     // get the number of frames
     int num_frames1 = video1.numFrames();
@@ -54,35 +66,158 @@ int main(int argc, char *argv[]) {
     }
 
     // vector for PSNR values
-    vector<double> psnr_values;
+    vector<double> Ypsnr_values;
+    vector<double> Upsnr_values;
+    vector<double> Vpsnr_values;
+
+    //YUV vectors
+    vector<int> Y1 = vector<int>(width1 * height1);
+    vector<int> U1 = vector<int>(width1 * height1 / 4);
+    vector<int> V1 = vector<int>(width1 * height1 / 4);
+    vector<int> Y2 = vector<int>(width2 * height2);
+    vector<int> U2 = vector<int>(width2 * height2 / 4);
+    vector<int> V2 = vector<int>(width2 * height2 / 4);
+
+    char line[100]; //Read the line after the header
+
+    bool finish = false;
 
     // loop through the frames of the two videos
-    for (int i = 0; i < num_frames1; i++) {
-        // get the current frame of the first video
-        Mat frame1 = video1.next_frame();
-        // get the current frame of the second video
-        Mat frame2 = video2.next_frame();
-
-        // create a matrix to store the difference between the two frames
-        Mat diff = Mat::zeros(height, width, CV_8UC1);
-
-        // loop through the rows of the frame
-        for (int r = 0; r < height; r++) {
-            // loop through the columns of the frame
-            for (int c = 0; c < width; c++) {
-                // get the pixel value of the first frame
-                int pixel1 = frame1.at<uchar>(r, c);
-                // get the pixel value of the second frame
-                int pixel2 = frame2.at<uchar>(r, c);
-
-                // calculate the difference
-                int diff_pixel = pixel1 - pixel2;
-
-                // store the difference in the diff matrix
-                diff.at<uchar>(r, c) = diff_pixel;
+    while(!feof(input1)){
+        //VIDEO 1
+        //read the frame line
+        fgets(line, 100, input1);
+        //read the Y data  (Height x Width)
+        for(int i = 0; i < width1 * height1; i++){
+            int value = fgetc(input1);
+            Y1[i] = value;
+            if(value < 0){
+                finish = true;
+                break;
             }
         }
+        if(finish) break;
+        for(int i = 0; i < width1 * height1 / 4; i++) U1[i] = fgetc(input1); //read the U data (Height/2 x Width/2)
+        for(int i = 0; i < width1 * height1 / 4; i++) V1[i] = fgetc(input1); //read the V data (Height/2 x Width/2)
+
+        //VIDEO 2
+        //read the frame line
+        fgets(line, 100, input2);
+        //read the Y data  (Height x Width)
+        for(int i = 0; i < width2 * height2; i++){
+            int value = fgetc(input2);
+            Y2[i] = value;
+            if(value < 0){
+                finish = true;
+                break;
+            }
+        }
+        if(finish) break;
+        for(int i = 0; i < width2 * height2 / 4; i++) U2[i] = fgetc(input2); //read the U data (Height/2 x Width/2)
+        for(int i = 0; i < width2 * height2 / 4; i++) V2[i] = fgetc(input2); //read the V data (Height/2 x Width/2)
+
+        Mat YMat1 = Mat(height1, width1, CV_8UC1);
+        Mat UMat1 = Mat(height1/2, width1/2, CV_8UC1);
+        Mat VMat1 = Mat(height1/2, width1/2, CV_8UC1);
+
+        Mat YMat2 = Mat(height2, width2, CV_8UC1);
+        Mat UMat2 = Mat(height2/2, width2/2, CV_8UC1);
+        Mat VMat2 = Mat(height2/2, width2/2, CV_8UC1);
+
+        for(int i = 0; i < height1; i++){
+            for(int j = 0; j < width1; j++) YMat1.at<uchar>(i, j) = Y1[i * width1 + j];
+            if (i < height1/2 && i < width1/2) {
+                for(int j = 0; j < width1/2; j++){
+                    UMat1.at<uchar>(i, j) = U1[i * width1/2 + j];
+                    VMat1.at<uchar>(i, j) = V1[i * width1/2 + j];
+                }
+            }
+        }
+
+        for(int i = 0; i < height2; i++){
+            for(int j = 0; j < width2; j++) YMat2.at<uchar>(i, j) = Y2[i * width2 + j];
+            if (i < height2/2 && i < width2/2) {
+                for(int j = 0; j < width2/2; j++){
+                    UMat2.at<uchar>(i, j) = U2[i * width2/2 + j];
+                    VMat2.at<uchar>(i, j) = V2[i * width2/2 + j];
+                }
+            }
+        }
+
+        //psnr calculation
+        //Y
+        double psnr;
+        long int sum = 0;
+        for(int i = 0; i < height1; i++){
+            for(int j = 0; j < width1; j++){
+                // cout << int(YMat1.at<uchar>(i, j)) << " " << int(YMat2.at<uchar>(i, j)) <<  " = " << pow(YMat1.at<uchar>(i, j) - YMat2.at<uchar>(i, j), 2) << endl;
+                sum += pow(YMat1.at<uchar>(i, j) - YMat2.at<uchar>(i, j), 2);
+                
+                
+            }
+        }
+        double e2 = (double)sum / (width1 * height1);
+        psnr = 10 * log10(255 * 255 / e2);
+        Ypsnr_values.push_back(psnr);
+
+        // //U
+        // sum = 0;
+        // for(int i = 0; i < height1/2; i++){
+        //     for(int j = 0; j < width1/2; j++){
+        //         sum += pow(UMat1.at<uchar>(i, j) - UMat2.at<uchar>(i, j), 2);
+        //     }
+        // }
+        // e2 = sum / (width1/2 * height1/2);
+        // psnr = 10 * log10(255 * 255 / e2);
+        // Upsnr_values.push_back(psnr);
+
+        // //V
+        // sum = 0;
+        // for(int i = 0; i < height1/2; i++){
+        //     for(int j = 0; j < width1/2; j++){
+        //         sum += pow(VMat1.at<uchar>(i, j) - VMat2.at<uchar>(i, j), 2);
+        //     }
+        // }
+        // e2 = sum / (width1/2 * height1/2);
+        // psnr = 10 * log10(255 * 255 / e2);
+        // Vpsnr_values.push_back(psnr);
     }
+
+
+    //calculate the lowest psnr for each component
+    double Ypsnr = 0;
+    // double Upsnr = 0;
+    // double Vpsnr = 0;
+
+    for(int i = 0; i < Ypsnr_values.size(); i++){
+        //if Ypnsr is infinite, Ypsnr is 100
+        if(Ypsnr_values[i] == numeric_limits<double>::infinity()) Ypsnr_values[i] = 100;
+        Ypsnr += Ypsnr_values[i];
+        // Upsnr += Upsnr_values[i];
+        // Vpsnr += Vpsnr_values[i];
+    }
+
+    Ypsnr /= Ypsnr_values.size();
+    // Upsnr /= Upsnr_values.size();
+    // Vpsnr /= Vpsnr_values.size();
+
+    //print the results
+    // cout << "YPSNR: " << Ypsnr << endl;
+    // cout << "UPSNR: " << Upsnr << endl;
+    // cout << "VPSNR: " << Vpsnr << endl;
+
+    //average over all components
+    // double psnr = (Ypsnr + Upsnr + Vpsnr) / 3;
+    if (Ypsnr == 100 ) cout << "PSNR: " << "inf" << endl;
+    else cout << "PSNR: " << Ypsnr << endl;
+
+    //end clock
+    clock_t end = clock();
+    double elapsed_secs = double(end - start) / CLOCKS_PER_SEC;
+    //milis 
+    cout << "Time: " << elapsed_secs * 1000 << " ms" << endl;
+    return 0;
+    
 }
 
 

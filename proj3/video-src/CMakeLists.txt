@@ -37,5 +37,5 @@ target_link_libraries (lossy_inter_encoder ${OpenCV_LIBS})
 add_executable (lossy_inter_decoder lossy_inter_decoder.cpp)
 target_link_libraries (lossy_inter_decoder ${OpenCV_LIBS}) 
 
-# add_executable (video_cmp video_cmp.cpp)
-# target_link_libraries (video_cmp ${OpenCV_LIBS})
+add_executable (video_cmp video_cmp.cpp)
+target_link_libraries (video_cmp ${OpenCV_LIBS})

@@ -112,5 +112,4 @@ private:
     int frame_rate_2_;
     int num_frames_;
     std::string color_space_;
-    std::chrono::duration<double> elapsed_;
 };
