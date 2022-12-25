@@ -192,25 +192,25 @@ int main(int argc, char* argv[]){
             Ydecoded[i] = Ydecoded[i] | random;
         }
 
-        if (i < Cbdecoded.size()){
-            if(quantization != 1){
-                Cbdecoded[i] = Cbdecoded[i] << 1;
-                Cbdecoded[i] = Cbdecoded[i] | 1;
-                Cbdecoded[i] = Cbdecoded[i] << (quantization - 1);
+        // if (i < Cbdecoded.size()){
+        //     if(quantization != 1){
+        //         Cbdecoded[i] = Cbdecoded[i] << 1;
+        //         Cbdecoded[i] = Cbdecoded[i] | 1;
+        //         Cbdecoded[i] = Cbdecoded[i] << (quantization - 1);
                 
-                Crdecoded[i] = Crdecoded[i] << 1;
-                Crdecoded[i] = Crdecoded[i] | 1;
-                Crdecoded[i] = Crdecoded[i] << (quantization - 1);
-            }else{
-                //int random is a random value of 0 or 1
-                int random = rand() % 2;
-                Cbdecoded[i] = Cbdecoded[i] << 1;
-                Cbdecoded[i] = Cbdecoded[i] | random;
-                Crdecoded[i] = Crdecoded[i] << 1;
-                Crdecoded[i] = Crdecoded[i] | random;
+        //         Crdecoded[i] = Crdecoded[i] << 1;
+        //         Crdecoded[i] = Crdecoded[i] | 1;
+        //         Crdecoded[i] = Crdecoded[i] << (quantization - 1);
+        //     }else{
+        //         //int random is a random value of 0 or 1
+        //         int random = rand() % 2;
+        //         Cbdecoded[i] = Cbdecoded[i] << 1;
+        //         Cbdecoded[i] = Cbdecoded[i] | random;
+        //         Crdecoded[i] = Crdecoded[i] << 1;
+        //         Crdecoded[i] = Crdecoded[i] | random;
 
-            }
-        }
+        //     }
+        // }
     }
     
 
