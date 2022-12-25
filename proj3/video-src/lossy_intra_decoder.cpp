@@ -180,7 +180,7 @@ int main(int argc, char* argv[]){
     }
 
     //undo the quantization of YUV decoded values back to the original size
-    for (int i = 0; i < Ydecoded.size(); i++){
+    for (long unsigned int i = 0; i < Ydecoded.size(); i++){
         if(quantization != 1){
             Ydecoded[i] = Ydecoded[i] << 1;
             Ydecoded[i] = Ydecoded[i] | 1;
