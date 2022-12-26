@@ -264,11 +264,6 @@ int main(int argc, char* argv[]){
         // Quantization of residuals
         for (long unsigned int i = 0; i < Yresiduals.size(); i++) {
             Yresiduals[i] = Yresiduals[i] >> quantization;
-            if (i < Cbresiduals.size()) {
-                // if(numFrames == 1 and i < 1000) cout << Crresiduals[i] << endl;
-                // Cbresiduals[i] = Cbresiduals[i] >> quantization;
-                // Crresiduals[i] = Crresiduals[i] >> quantization;
-            }
         }
 
         //M VECTOR CALCULATION

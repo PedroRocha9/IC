@@ -479,6 +479,7 @@ int main(int argc, char* argv[]){
             }
         }
 
+        //Quantization and encoding
         Golomb g;
         int m_index = 0;
         bool keyFrame = false;
@@ -487,6 +488,7 @@ int main(int argc, char* argv[]){
                 Ym.push_back(Ym_vector[m_index]);
                 m_index++;
             }
+            //only quantize the residuals that are not in the keyframe
             if((frameIndex !=0) && (frameIndex % keyFramePeriod != 0)){
                 Yresiduals[i] = Yresiduals[i] >> quantization;
             }
@@ -502,10 +504,6 @@ int main(int argc, char* argv[]){
                 Crm.push_back(Crm_vector[m_index]);
                 m_index++;
             }
-            // if((frameIndex !=0) && (frameIndex % keyFramePeriod != 0)){
-            //     Cbresiduals[i] = Cbresiduals[i] >> quantization;
-            //     Crresiduals[i] = Crresiduals[i] >> quantization;
-            // }
 
             Cbencoded += g.encode(Cbresiduals[i], Cbm_vector[m_index]);
             Crencoded += g.encode(Crresiduals[i], Crm_vector[m_index]);
