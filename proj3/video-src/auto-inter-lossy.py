@@ -58,6 +58,8 @@ def dump_stats(f, times=None, sizes=None):
 
 
 def decoder(d, idx):
+    snrs = []
+
     for i in range(idx):
         # Decode lossless
         if i % len(BITS) == 0:
@@ -67,13 +69,21 @@ def decoder(d, idx):
             output = subprocess.check_output(f'../video-bin/lossy_inter_decoder {i} {i}.y4m', shell=True)
             output = output.decode("utf-8").split("\n")[-2].split(" ")[-2]
             d.write(f'{output}\n')
-            
+
+            snr = subprocess.check_output(f'../video-bin/video_cmp {VIDEO_FILES[i //  len(BITS) % len(VIDEO_FILES)]} {i}.y4m', shell=True)
+            snrs.append(snr.decode("utf-8").split("\n")[-2].split(" ")[-1])
         except:
             d.write('-1\n')
 
         # Remove all temporary files
         subprocess.call(f'rm {i}', shell=True)
         subprocess.call(f'rm {i}.y4m', shell=True)
+
+    d.write('\nSNR:\n')
+    for i, s in enumerate(snrs):
+        if i % len(BITS) == 0:
+            d.write(f'{VIDEO_FILES[i //  len(BITS) % len(VIDEO_FILES)]}\n')
+        d.write(f'{s}\n')
 
     return idx
 
