@@ -147,7 +147,6 @@ int main(int argc, char* argv[]){
     clock_t start2 = clock();
 
     //keyFrame variables
-    int keyFrame = 0;
     int frameIndex = 0;
     Mat keyYmat, keyUmat, keyVmat;
 
@@ -472,8 +471,8 @@ int main(int argc, char* argv[]){
     string motionXencoded = "";
     string motionYencoded = "";
     Golomb g;
-    for(int i = 0; i < motionVectorXs.size(); i++) motionXencoded += g.encode(motionVectorXs[i], 8);
-    for(int i = 0; i < motionVectorYs.size(); i++) motionYencoded += g.encode(motionVectorYs[i], 8);
+    for(long unsigned int i = 0; i < motionVectorXs.size(); i++) motionXencoded += g.encode(motionVectorXs[i], 8);
+    for(long unsigned int i = 0; i < motionVectorYs.size(); i++) motionYencoded += g.encode(motionVectorYs[i], 8);
     vector<int> encoded_motionXbits;
     vector<int> encoded_motionYbits;
     for (long unsigned int i = 0; i < motionXencoded.length(); i++)

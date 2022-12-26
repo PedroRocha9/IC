@@ -85,7 +85,6 @@ int main(int argc, char* argv[]){
     int frame_rate_2 = bits_to_int(v_frame_rate_2);
     char interlace = bits_to_char(v_interlace);
     int blockSize = bits_to_int(v_bs);
-    int searchDistance = bits_to_int(v_searchD);
     int quantization = bits_to_int(v_quant);
     int keyFramePeriod = bits_to_int(v_keyFrame);
     int padded_width = bits_to_int(v_paddedWidth);
@@ -191,7 +190,7 @@ int main(int argc, char* argv[]){
     int frameIndex = 0;
     int total = padded_height*padded_width;
 
-    for (int i = 0; i < Ydecoded.size(); i++){
+    for (long unsigned int i = 0; i < Ydecoded.size(); i++){
         if (i % total == 0 and i != 0) {
                 frameIndex++;
         }

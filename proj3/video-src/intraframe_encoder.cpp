@@ -108,7 +108,6 @@ int main(int argc, char* argv[]){
         
     char line[100]; //Read the line after the header
     fgets(line, 100, input);
-    clock_t start2 = clock();
 
     while(!feof(input)){
         numFrames++;
@@ -350,14 +349,8 @@ int main(int argc, char* argv[]){
         // if (numFrames == 4) break;
     } //end of loop for each frame
 
-    clock_t end2 = clock();
-    double elapsed_secs2 = double(end2 - start2) / CLOCKS_PER_SEC * 1000;
-    //cout << "Time to read, predict and encode YUV values (and m) from frame: " << elapsed_secs2 << " ms" << endl;
-
     BitStream bs(argv[2], "w");
     vector<int> bits;
-
-    start2 = clock();
 
     for (int i = 15; i >= 0; i--) bits.push_back((width >> i) & 1);         //the first 16 bits are the width of the image
     for (int i = 15; i >= 0; i--) bits.push_back((height >> i) & 1);        //the next 16 bits are the height of the image
@@ -387,17 +380,6 @@ int main(int argc, char* argv[]){
     for(long unsigned int i = 0; i < encoded_Ybits.size(); i++) bits.push_back(encoded_Ybits[i]);   //the next bits are the encoded_Ybits
     for(long unsigned int i = 0; i < encoded_Cbbits.size(); i++) bits.push_back(encoded_Cbbits[i]); //the next bits are the encoded_Cbbits
     for(long unsigned int i = 0; i < encoded_Crbits.size(); i++) bits.push_back(encoded_Crbits[i]); //the next bits are the encoded_Crbits
-
-    end2 = clock();
-    elapsed_secs2 = double(end2 - start2) / CLOCKS_PER_SEC * 1000;
-    //cout << "Time to push back all values to bits: " << elapsed_secs2 << " ms" << endl;
-    start2 = clock();
-    
-    bs.writeBits(bits);
-    bs.close();
-    end2 = clock();
-    elapsed_secs2 = double(end2 - start2) / CLOCKS_PER_SEC * 1000;
-    //cout << "Time to write to bits: " << elapsed_secs2 << " ms" << endl;
 
     //end the timer
     clock_t end = clock();

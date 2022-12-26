@@ -82,7 +82,6 @@ int main(int argc, char* argv[]){
     int frame_rate_2 = bits_to_int(v_frame_rate_2);
     char interlace = bits_to_char(v_interlace);
     int blockSize = bits_to_int(v_bs);
-    int searchDistance = bits_to_int(v_searchD);
     int keyFramePeriod = bits_to_int(v_keyFrame);
     int padded_width = bits_to_int(v_paddedWidth);
     int padded_height = bits_to_int(v_paddedHeight);

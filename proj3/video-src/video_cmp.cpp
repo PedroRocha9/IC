@@ -187,7 +187,7 @@ int main(int argc, char *argv[]) {
     double Upsnr = 0;
     double Vpsnr = 0;
 
-    for(int i = 0; i < Ypsnr_values.size(); i++){
+    for(long unsigned int i = 0; i < Ypsnr_values.size(); i++){
         //if Ypnsr is infinite, Ypsnr is 100
         if(Ypsnr_values[i] == numeric_limits<double>::infinity()) Ypsnr_values[i] = 100;
         Ypsnr += Ypsnr_values[i];

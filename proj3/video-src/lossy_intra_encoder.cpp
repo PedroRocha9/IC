@@ -404,6 +404,6 @@ int main(int argc, char* argv[]){
     clock_t end = clock();
     double elapsed_secs = double(end - start) / CLOCKS_PER_SEC;
     elapsed_secs = elapsed_secs * 1000;
-    // cout << "Execution time: " << elapsed_secs << " ms" << endl;
+    cout << "Execution time: " << elapsed_secs << " ms" << endl;
     return 0;
 }
