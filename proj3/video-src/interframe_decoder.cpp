@@ -45,9 +45,7 @@ int main(int argc, char* argv[]){
     BitStream bs(input_file, "r");
     string output_file = argv[2];
 
-    //The output file is a YUV4MPEG2 file
-    //write the header
-    ofstream out(output_file, ios::out | ios::binary);
+    
 
     //start a new timer
     clock_t start2 = clock();
@@ -97,11 +95,12 @@ int main(int argc, char* argv[]){
     int motionXSize = bits_to_int(v_motionXSize);
     int motionYSize = bits_to_int(v_motionYSize);
 
+    //The output file is a YUV4MPEG2 file
     //write the header
-    if(color_space != 420)
-        out << "YUV4MPEG2 W" << width << " H" << height << " F" << frame_rate_1 << ":" << frame_rate_2 << " I" << interlace << " A" << aspect_ratio_1 << ":" << aspect_ratio_2 << " C" << color_space << endl;
-    else 
-        out << "YUV4MPEG2 W" << width << " H" << height << " F" << frame_rate_1 << ":" << frame_rate_2 << " I" << interlace << " A" << aspect_ratio_1 << ":" << aspect_ratio_2 << endl;
+    ofstream out(output_file, ios::out | ios::binary);
+
+    //write the header
+    out << "YUV4MPEG2 W" << width << " H" << height << " F" << frame_rate_1 << ":" << frame_rate_2 << " I" << interlace << " A" << aspect_ratio_1 << ":" << aspect_ratio_2 << endl;
 
     //write to the file FRAME
     out << "FRAME" << endl;
@@ -222,16 +221,8 @@ int main(int argc, char* argv[]){
         //INTRA-FRAME PREDICTION (keyFrame)
         //if its the first frame, or if the current frame is a keyframe, do not use inter frame prediction
         if(n == 0 || (n % keyFramePeriod == 0)){
-            if (color_space == 420) {
-                UMat = Mat(height/2, width/2, CV_8UC1);
-                VMat = Mat(height/2, width/2, CV_8UC1);
-            } else if (color_space == 422) {
-                UMat = Mat(height, width/2, CV_8UC1);
-                VMat = Mat(height, width/2, CV_8UC1);
-            } else if (color_space == 444) {
-                UMat = Mat(height, width, CV_8UC1);
-                VMat = Mat(height, width, CV_8UC1);
-            }
+            UMat = Mat(height/2, width/2, CV_8UC1);
+            VMat = Mat(height/2, width/2, CV_8UC1);
 
             for (int i = 0; i < height; i++) {
                 for (int j = 0; j < width; j++) {
@@ -242,45 +233,21 @@ int main(int argc, char* argv[]){
                         pixel_idx2++;
                     } else if (i == 0) {
                         YMat.at<uchar>(i, j) = Ydecoded[pixel_idx] + YMat.at<uchar>(i, j-1);
-                        if (color_space == 420 || color_space == 422) {
-                            if (j < (width/2)) {
-                                UMat.at<uchar>(i,j) = Cbdecoded[pixel_idx2] + UMat.at<uchar>(i, j-1);
-                                VMat.at<uchar>(i,j) = Crdecoded[pixel_idx2] + VMat.at<uchar>(i, j-1);
-                                pixel_idx2++;
-                            }
-                        } else if (color_space == 444) {
+                        if (j < (width/2)) {
                             UMat.at<uchar>(i,j) = Cbdecoded[pixel_idx2] + UMat.at<uchar>(i, j-1);
                             VMat.at<uchar>(i,j) = Crdecoded[pixel_idx2] + VMat.at<uchar>(i, j-1);
                             pixel_idx2++;
                         }
                     } else if (j == 0) {
                         YMat.at<uchar>(i, j) = Ydecoded[pixel_idx] + YMat.at<uchar>(i-1, j);
-                        if (color_space == 420) {
-                            if (i < (height/2)) {
-                                UMat.at<uchar>(i,j) = Cbdecoded[pixel_idx2] + UMat.at<uchar>(i-1, j);
-                                VMat.at<uchar>(i,j) = Crdecoded[pixel_idx2] + VMat.at<uchar>(i-1, j);
-                                pixel_idx2++;
-                            }
-                        } else if(color_space == 422 || color_space == 444){
+                        if (i < (height/2)) {
                             UMat.at<uchar>(i,j) = Cbdecoded[pixel_idx2] + UMat.at<uchar>(i-1, j);
                             VMat.at<uchar>(i,j) = Crdecoded[pixel_idx2] + VMat.at<uchar>(i-1, j);
                             pixel_idx2++;
                         }
                     } else {
                         YMat.at<uchar>(i, j) = Ydecoded[pixel_idx] + predict(YMat.at<uchar>(i, j-1), YMat.at<uchar>(i-1, j), YMat.at<uchar>(i-1, j-1));
-                        if(color_space == 420){
-                            if(i < (height/2) && j < (width/2)){
-                                UMat.at<uchar>(i,j) = Cbdecoded[pixel_idx2] + predict(UMat.at<uchar>(i, j-1), UMat.at<uchar>(i-1, j), UMat.at<uchar>(i-1, j-1));
-                                VMat.at<uchar>(i,j) = Crdecoded[pixel_idx2] + predict(VMat.at<uchar>(i, j-1), VMat.at<uchar>(i-1, j), VMat.at<uchar>(i-1, j-1));
-                                pixel_idx2++;
-                            }
-                        } else if(color_space == 422){
-                            if(j < (width/2)){
-                                UMat.at<uchar>(i,j) = Cbdecoded[pixel_idx2] + predict(UMat.at<uchar>(i, j-1), UMat.at<uchar>(i-1, j), UMat.at<uchar>(i-1, j-1));
-                                VMat.at<uchar>(i,j) = Crdecoded[pixel_idx2] + predict(VMat.at<uchar>(i, j-1), VMat.at<uchar>(i-1, j), VMat.at<uchar>(i-1, j-1));
-                                pixel_idx2++;
-                            }
-                        } else if(color_space == 444){
+                        if(i < (height/2) && j < (width/2)){
                             UMat.at<uchar>(i,j) = Cbdecoded[pixel_idx2] + predict(UMat.at<uchar>(i, j-1), UMat.at<uchar>(i-1, j), UMat.at<uchar>(i-1, j-1));
                             VMat.at<uchar>(i,j) = Crdecoded[pixel_idx2] + predict(VMat.at<uchar>(i, j-1), VMat.at<uchar>(i-1, j), VMat.at<uchar>(i-1, j-1));
                             pixel_idx2++;
@@ -293,8 +260,6 @@ int main(int argc, char* argv[]){
             keyYmat = YMat.clone();
             keyUmat = UMat.clone();
             keyVmat = VMat.clone();
-
-
             
             //convert the matrix back to a vector
             vector<int> Y_vector;
@@ -356,89 +321,26 @@ int main(int argc, char* argv[]){
             YMat = Mat(padded_height, padded_width, CV_8UC1);
             UMat = Mat(padded_height/2, padded_width/2, CV_8UC1);
             VMat = Mat(padded_height/2, padded_width/2, CV_8UC1);
-            // //create a bidimensional vector to store the blocks
-            // vector<vector<int>> YBi = vector<vector<int>>(padded_height, vector<int>(padded_width));
-            // vector<vector<int>> UBi;
-            // vector<vector<int>> VBi;
-            // if (color_space == 420) {
-            //     UMat = Mat(padded_height/2, padded_width/2, CV_8UC1);
-            //     VMat = Mat(padded_height/2, padded_width/2, CV_8UC1);
-            //     UBi = vector<vector<int>>(padded_height/2, vector<int>(padded_width/2));
-            //     VBi = vector<vector<int>>(padded_height/2, vector<int>(padded_width/2));
-            // }
-            // for (int i = 0; i < padded_height; i++){
-            //     for (int j = 0; j < padded_width; j++){
-
-            //         YMat.at<uchar>(i, j) = Ydecoded[pixel_idx];
-            //         YBi[i][j] = Ydecoded[pixel_idx];
-            //         if ((i < padded_height/2) && (j < padded_width/2)) {
-            //             UMat.at<uchar>(i, j) = Cbdecoded[pixel_idx2];
-            //             VMat.at<uchar>(i, j) = Crdecoded[pixel_idx2];
-            //             UBi[i][j] = Cbdecoded[pixel_idx2];
-            //             VBi[i][j] = Crdecoded[pixel_idx2];
-            //             pixel_idx2++;
-            //         }
-            //         pixel_idx++;
-            //     }
-            // }
+            
             //FRAME CONSTRUCTION
-            Mat frame = Mat(padded_height, padded_width, CV_8UC3);
-            vector<vector<int>> frameBiY = vector<vector<int>>(padded_height, vector<int>(padded_width));
-            vector<vector<int>> frameBiU = vector<vector<int>>(padded_height, vector<int>(padded_width));
-            vector<vector<int>> frameBiV = vector<vector<int>>(padded_height, vector<int>(padded_width));
             Mat keyFrameMat = Mat(padded_height, padded_width, CV_8UC3);
             //colorspace 420
             for (int i = 0; i < padded_height; i++){
                 for (int j = 0; j < padded_width; j++){
                     int half_i = i/2;
                     int half_j = j/2;
-                    // frame.at<Vec3b>(i, j)[0] = YMat.at<uchar>(i, j);
-                    // frame.at<Vec3b>(i, j)[1] = UMat.at<uchar>(half_i, half_j);
-                    // frame.at<Vec3b>(i, j)[2] = VMat.at<uchar>(half_i, half_j);
-
-                    //after blockSize block_j iterations, increment block_i and reset block_j
-                    //after blockSize block_i iterations, reset block_i and block_j
-                    // frameBiY[i][j] = YBi[i][j];
-                    // frameBiU[i][j] = UBi[half_i][half_j];
-                    // frameBiV[i][j] = VBi[half_i][half_j];
-
                     keyFrameMat.at<Vec3b>(i, j)[0] = keyYmat.at<uchar>(i, j);
                     keyFrameMat.at<Vec3b>(i, j)[1] = keyUmat.at<uchar>(half_i, half_j);
                     keyFrameMat.at<Vec3b>(i, j)[2] = keyVmat.at<uchar>(half_i, half_j);
                 }
             }
 
-            
-            if(n == 7){
-                // cvtColor(keyFrameMat, keyFrameMat, COLOR_YUV2BGR);
-                // imwrite("keyFrameMat_inter.jpg", keyFrameMat);
-                // for (int i = 0; i < padded_height; i++){
-                // for(int i = 0; i < height; i++){
-                //     for(int j = 0; j < width; j++){
-                //         // cout << (int)keyFrameMat.at<Vec3b>(i, j)[0] << endl;
-                //     }
-                // }
-            }
-
-            //current Y, Cb and Cr block
-            // Mat frameBlock = Mat(blockSize, blockSize, CV_8UC3);
-            // vector<vector<int>> frameBlockBiY = vector<vector<int>>(blockSize, vector<int>(blockSize));
-            // vector<vector<int>> frameBlockBiU = vector<vector<int>>(blockSize, vector<int>(blockSize));
-            // vector<vector<int>> frameBlockBiV = vector<vector<int>>(blockSize, vector<int>(blockSize));
             int num_blocks_width = padded_width/blockSize;     //number of blocks on the width of the whole frame
             int num_blocks_height = padded_height/blockSize;   //number of blocks on the height of the whole frame
             for (int bw = 0; bw < num_blocks_width; bw++){
                 for(int bh = 0; bh < num_blocks_height; bh++){
                     for (int i = 0; i < blockSize; i++){
                         for (int j = 0; j < blockSize; j++){
-                            //Getting the current block (unpredicted)
-                            // frameBlock.at<Vec3b>(i, j)[0] = frame.at<Vec3b>(bh*blockSize + i, bw*blockSize + j)[0];
-                            // frameBlock.at<Vec3b>(i, j)[1] = frame.at<Vec3b>(bh*blockSize + i, bw*blockSize + j)[1];
-                            // frameBlock.at<Vec3b>(i, j)[2] = frame.at<Vec3b>(bh*blockSize + i, bw*blockSize + j)[2];
-                            // frameBlockBiY[i][j] = frameBiY[bh*blockSize + i][bw*blockSize + j];
-                            // frameBlockBiU[i][j] = frameBiU[bh*blockSize + i][bw*blockSize + j];
-                            // frameBlockBiV[i][j] = frameBiV[bh*blockSize + i][bw*blockSize + j];
-
                             //Getting the current block (predicted)
                             YMat.at<uchar>(bh*blockSize + i, bw*blockSize + j) = keyFrameMat.at<Vec3b>(bh*blockSize + i + motionVectorYs[motionY_idx], bw*blockSize + j + motionVectorXs[motionX_idx])[0] + Ydecoded[pixel_idx];
                             if(n==7){
@@ -450,10 +352,6 @@ int main(int argc, char* argv[]){
                                     cerr << "Error: Motion vector[Y] out of bounds [0-" << padded_width << "]: " << (bw*blockSize + j + motionVectorXs[motionX_idx]) << endl;
                                     return -1;
                                 }
-                                // cout << bh*blockSize + i + motionVectorYs[motionY_idx] << " " << bw*blockSize + j + motionVectorXs[motionX_idx]<< endl; //VALIDO
-                                // cout << (int)keyFrameMat.at<Vec3b>(bh*blockSize + i + motionVectorYs[motionY_idx], bw*blockSize + j + motionVectorXs[motionX_idx])[0] << endl; //ERRO
-                                // cout << (int)YMat.at<uchar>(bh*blockSize + i, bw*blockSize + j) << endl; 
-                                // cout << Ydecoded[pixel_idx] << endl; 
                             }
                             pixel_idx++;
                             if (i % 2 == 0 and j % 2 == 0){

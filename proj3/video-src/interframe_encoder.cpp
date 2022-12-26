@@ -170,61 +170,23 @@ int main(int argc, char* argv[]){
             }
         }
         if (finish) break;
-        if (colorSpace == 420) {
-            for(int i = 0; i < width * height / 4; i++) U[i] = fgetc(input); //read the U data (Height/2 x Width/2)
-            for(int i = 0; i < width * height / 4; i++) V[i] = fgetc(input); //read the V data (Height/2 x Width/2)
-        } else if(colorSpace == 422){
-            for(int i = 0; i < width * height / 2; i++) U[i] = fgetc(input); //read the U data (Height x Width/2)
-            for(int i = 0; i < width * height / 2; i++) V[i] = fgetc(input); //read the V data (Height x Width/2)
-        } else if(colorSpace == 444){
-            for(int i = 0; i < width * height; i++) U[i] = fgetc(input); //read the U data (Height x Width)
-            for(int i = 0; i < width * height; i++) V[i] = fgetc(input); //read the V data (Height x Width)
-        }
+        //U AND V DATA
+        for(int i = 0; i < width * height / 4; i++) U[i] = fgetc(input); //read the U data (Height/2 x Width/2)
+        for(int i = 0; i < width * height / 4; i++) V[i] = fgetc(input); //read the V data (Height/2 x Width/2)
         
 
         //Create Mat objects for Y, U, and V
         Mat YMat = Mat(height, width, CV_8UC1);
-        Mat UMat;
-        Mat VMat;
-        if(colorSpace == 420){
-            UMat = Mat(height/2, width/2, CV_8UC1);
-            VMat = Mat(height/2, width/2, CV_8UC1);
-        } else if(colorSpace == 422){
-            UMat = Mat(height, width/2, CV_8UC1);
-            VMat = Mat(height, width/2, CV_8UC1);
-        } else if(colorSpace == 444){
-            UMat = Mat(height, width, CV_8UC1);
-            VMat = Mat(height, width, CV_8UC1);
-        }
-        
-        //copy the Y, U, and V data into the Mat objects
-        //420 Color Space
-        if(colorSpace == 420){
-            for(int i = 0; i < height; i++){
-                for(int j = 0; j < width; j++) YMat.at<uchar>(i, j) = Y[i * width + j];
-                if (i < height/2 && i < width/2) {
-                    for(int j = 0; j < width/2; j++){
-                        UMat.at<uchar>(i, j) = U[i * width/2 + j];
-                        VMat.at<uchar>(i, j) = V[i * width/2 + j];
-                    }
-                }
-            }
-        //422 Color Space
-        } else if(colorSpace == 422){
-            for(int i = 0; i < height; i++){
-                for(int j = 0; j < width; j++) YMat.at<uchar>(i, j) = Y[i * width + j];
+        Mat UMat = Mat(height/2, width/2, CV_8UC1);
+        Mat VMat = Mat(height, width/2, CV_8UC1);
+    
+
+        for(int i = 0; i < height; i++){
+            for(int j = 0; j < width; j++) YMat.at<uchar>(i, j) = Y[i * width + j];
+            if (i < height/2 && i < width/2) {
                 for(int j = 0; j < width/2; j++){
                     UMat.at<uchar>(i, j) = U[i * width/2 + j];
                     VMat.at<uchar>(i, j) = V[i * width/2 + j];
-                }
-            }
-        //444 Color Space
-        } else if(colorSpace == 444){
-            for(int i = 0; i < height; i++){
-                for(int j = 0; j < width; j++){
-                    YMat.at<uchar>(i, j) = Y[i * width + j];
-                    UMat.at<uchar>(i, j) = U[i * width + j];
-                    VMat.at<uchar>(i, j) = V[i * width + j];
                 }
             }
         }
@@ -243,7 +205,7 @@ int main(int argc, char* argv[]){
 
         //PREDICTION 
         //INTRA-FRAME PREDICTION (keyFrame)
-        //if its the first frame, or if the current frame is a keyframe, do not use inter frame prediction
+        //if its the first frame, or if the current frame is a keyframe, use intra-frame prediction
         if(frameIndex==0 || (frameIndex % keyFramePeriod==0)){
             //go pixel by pixel through the Y, U, and V Mat objects to make predictions
             for(int i = 0; i < height; i++){
@@ -266,12 +228,7 @@ int main(int argc, char* argv[]){
                         //if its the first line of the image, use only the previous pixel (to the left)
                         Yerror = Y - YMat.at<uchar>(i, j-1);
                         Yresiduals.push_back(Yerror);
-                        if(colorSpace == 420 || colorSpace == 422){
-                            if (j < (width/2)) {
-                                Cbresiduals.push_back(U - UMat.at<uchar>(i, j-1));
-                                Crresiduals.push_back(V - VMat.at<uchar>(i, j-1));
-                            }
-                        } else if(colorSpace == 444){
+                        if (j < (width/2)) {
                             Cbresiduals.push_back(U - UMat.at<uchar>(i, j-1));
                             Crresiduals.push_back(V - VMat.at<uchar>(i, j-1));
                         }
@@ -279,12 +236,7 @@ int main(int argc, char* argv[]){
                         //if its the first pixel of the line, use only the pixel above
                         Yerror = Y - YMat.at<uchar>(i-1, j);
                         Yresiduals.push_back(Yerror);
-                        if (colorSpace == 420){
-                            if (i < (height/2)) {
-                                Cbresiduals.push_back(U - UMat.at<uchar>(i-1, j));
-                                Crresiduals.push_back(V - VMat.at<uchar>(i-1, j));
-                            }
-                        } else {
+                        if (i < (height/2)) {
                             Cbresiduals.push_back(U - UMat.at<uchar>(i-1, j));
                             Crresiduals.push_back(V - VMat.at<uchar>(i-1, j));
                         }
@@ -292,17 +244,7 @@ int main(int argc, char* argv[]){
                         //otherwise, use the prediction function
                         Yerror = Y - predict(YMat.at<uchar>(i, j-1), YMat.at<uchar>(i-1, j), YMat.at<uchar>(i-1, j-1));
                         Yresiduals.push_back(Yerror);
-                        if(colorSpace == 420){
-                            if (i < (height/2) && j < (width/2)) {
-                                Cbresiduals.push_back(U - predict(UMat.at<uchar>(i, j-1), UMat.at<uchar>(i-1, j), UMat.at<uchar>(i-1, j-1)));
-                                Crresiduals.push_back(V - predict(VMat.at<uchar>(i, j-1), VMat.at<uchar>(i-1, j), VMat.at<uchar>(i-1, j-1)));
-                            }
-                        } else if(colorSpace == 422){
-                            if (j < (width/2)) {
-                                Cbresiduals.push_back(U - predict(UMat.at<uchar>(i, j-1), UMat.at<uchar>(i-1, j), UMat.at<uchar>(i-1, j-1)));
-                                Crresiduals.push_back(V - predict(VMat.at<uchar>(i, j-1), VMat.at<uchar>(i-1, j), VMat.at<uchar>(i-1, j-1)));
-                            }
-                        } else if(colorSpace == 444){
+                        if (i < (height/2) && j < (width/2)) {
                             Cbresiduals.push_back(U - predict(UMat.at<uchar>(i, j-1), UMat.at<uchar>(i-1, j), UMat.at<uchar>(i-1, j-1)));
                             Crresiduals.push_back(V - predict(VMat.at<uchar>(i, j-1), VMat.at<uchar>(i-1, j), VMat.at<uchar>(i-1, j-1)));
                         }
@@ -330,7 +272,6 @@ int main(int argc, char* argv[]){
             //first thing to do is to create a Mat object for all of the frame, combining the Y, U and V Mat objects
             Mat frame = Mat(padded_height, padded_width, CV_8UC3);
             Mat keyFrameMat = Mat(padded_height, padded_width, CV_8UC3);
-            //colorspace 420
             for (int i = 0; i < padded_height; i++){
                 for (int j = 0; j < padded_width; j++){
                     int half_i = i/2;
@@ -343,7 +284,6 @@ int main(int argc, char* argv[]){
                     keyFrameMat.at<Vec3b>(i, j)[2] = keyVmat.at<uchar>(half_i, half_j);
                 }
             }
-            
             
 
             //current Y, Cb and Cr block
@@ -413,16 +353,9 @@ int main(int argc, char* argv[]){
                             int errorCb = frame.at<Vec3b>(bh*blockSize + i, bw*blockSize + j)[1] - keyFrameMat.at<Vec3b>(bh*blockSize + i + motionVectorY, bw*blockSize + j + motionVectorX)[1];
                             int errorCr = frame.at<Vec3b>(bh*blockSize + i, bw*blockSize + j)[2] - keyFrameMat.at<Vec3b>(bh*blockSize + i + motionVectorY, bw*blockSize + j + motionVectorX)[2];
                             Yresiduals.push_back(errorY);
-                            if(frameIndex==16) {
-                                // cout << bh*blockSize + i + motionVectorY << " " << bw*blockSize + j + motionVectorX << endl; //VALIDO
-                                // cout << (int)keyFrameMat.at<Vec3b>(bh*blockSize + i + motionVectorY, bw*blockSize + j + motionVectorX)[0] << endl; //ERRO
-                                // cout << errorY << endl;
-                            }
-                            
                             //only save the Cb and Cr residuals every 2 pixels 
                             if (i % 2 == 0 and j % 2 == 0){
                                 Cbresiduals.push_back(errorCb);
-                                // if(frameIndex == 289) cout << (int)keyFrameMat.at<Vec3b>(bh*blockSize + i + motionVectorY, bw*blockSize + j + motionVectorX)[1] << endl;
                                 Crresiduals.push_back(errorCr);
                             }
                         }
