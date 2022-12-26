@@ -52,8 +52,6 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    //start a timer
-    clock_t start = clock();
 
     // get the number of frames
     int num_frames1 = video1.numFrames();
@@ -160,62 +158,64 @@ int main(int argc, char *argv[]) {
         psnr = 10 * log10(255 * 255 / e2);
         Ypsnr_values.push_back(psnr);
 
-        // //U
-        // sum = 0;
-        // for(int i = 0; i < height1/2; i++){
-        //     for(int j = 0; j < width1/2; j++){
-        //         sum += pow(UMat1.at<uchar>(i, j) - UMat2.at<uchar>(i, j), 2);
-        //     }
-        // }
-        // e2 = sum / (width1/2 * height1/2);
-        // psnr = 10 * log10(255 * 255 / e2);
-        // Upsnr_values.push_back(psnr);
+        //U
+        sum = 0;
+        for(int i = 0; i < height1/2; i++){
+            for(int j = 0; j < width1/2; j++){
+                sum += pow(UMat1.at<uchar>(i, j) - UMat2.at<uchar>(i, j), 2);
+            }
+        }
+        e2 = sum / (width1/2 * height1/2);
+        psnr = 10 * log10(255 * 255 / e2);
+        Upsnr_values.push_back(psnr);
 
-        // //V
-        // sum = 0;
-        // for(int i = 0; i < height1/2; i++){
-        //     for(int j = 0; j < width1/2; j++){
-        //         sum += pow(VMat1.at<uchar>(i, j) - VMat2.at<uchar>(i, j), 2);
-        //     }
-        // }
-        // e2 = sum / (width1/2 * height1/2);
-        // psnr = 10 * log10(255 * 255 / e2);
-        // Vpsnr_values.push_back(psnr);
+        //V
+        sum = 0;
+        for(int i = 0; i < height1/2; i++){
+            for(int j = 0; j < width1/2; j++){
+                sum += pow(VMat1.at<uchar>(i, j) - VMat2.at<uchar>(i, j), 2);
+            }
+        }
+        e2 = sum / (width1/2 * height1/2);
+        psnr = 10 * log10(255 * 255 / e2);
+        Vpsnr_values.push_back(psnr);
     }
 
 
     //calculate the lowest psnr for each component
     double Ypsnr = 0;
-    // double Upsnr = 0;
-    // double Vpsnr = 0;
+    double Upsnr = 0;
+    double Vpsnr = 0;
 
     for(int i = 0; i < Ypsnr_values.size(); i++){
         //if Ypnsr is infinite, Ypsnr is 100
         if(Ypsnr_values[i] == numeric_limits<double>::infinity()) Ypsnr_values[i] = 100;
         Ypsnr += Ypsnr_values[i];
-        // Upsnr += Upsnr_values[i];
-        // Vpsnr += Vpsnr_values[i];
+        if(Upsnr_values[i] == numeric_limits<double>::infinity()) Upsnr_values[i] = 100;
+        Upsnr += Upsnr_values[i];
+        if(Vpsnr_values[i] == numeric_limits<double>::infinity()) Vpsnr_values[i] = 100;
+        Vpsnr += Vpsnr_values[i];
     }
 
     Ypsnr /= Ypsnr_values.size();
-    // Upsnr /= Upsnr_values.size();
-    // Vpsnr /= Vpsnr_values.size();
+    Upsnr /= Upsnr_values.size();
+    Vpsnr /= Vpsnr_values.size();
 
     //print the results
-    // cout << "YPSNR: " << Ypsnr << endl;
-    // cout << "UPSNR: " << Upsnr << endl;
-    // cout << "VPSNR: " << Vpsnr << endl;
+    if (Ypsnr == 100 ) cout << "YPSNR: " << "inf" << endl;
+    else cout << "YPSNR: " << Ypsnr << endl;
+
+    if (Upsnr == 100 ) cout << "UPSNR: " << "inf" << endl;
+    else cout << "UPSNR: " << Upsnr << endl;
+
+    if (Vpsnr == 100 ) cout << "VPSNR: " << "inf" << endl;
+    else cout << "VPSNR: " << Vpsnr << endl;
 
     //average over all components
-    // double psnr = (Ypsnr + Upsnr + Vpsnr) / 3;
-    if (Ypsnr == 100 ) cout << "PSNR: " << "inf" << endl;
-    else cout << "PSNR: " << Ypsnr << endl;
+    double psnr = (Ypsnr + Upsnr + Vpsnr) / 3;
+    if (psnr == 100 ) cout << "PSNR: " << "inf" << endl;
+    else cout << "PSNR: " << psnr << endl;
 
-    //end clock
-    clock_t end = clock();
-    double elapsed_secs = double(end - start) / CLOCKS_PER_SEC;
-    //milis 
-    cout << "Time: " << elapsed_secs * 1000 << " ms" << endl;
     return 0;
     
 }
