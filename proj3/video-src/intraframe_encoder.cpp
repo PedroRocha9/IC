@@ -381,6 +381,9 @@ int main(int argc, char* argv[]){
     for(long unsigned int i = 0; i < encoded_Cbbits.size(); i++) bits.push_back(encoded_Cbbits[i]); //the next bits are the encoded_Cbbits
     for(long unsigned int i = 0; i < encoded_Crbits.size(); i++) bits.push_back(encoded_Crbits[i]); //the next bits are the encoded_Crbits
 
+    bs.writeBits(bits);
+    bs.close();
+
     //end the timer
     clock_t end = clock();
     double elapsed_secs = double(end - start) / CLOCKS_PER_SEC;
