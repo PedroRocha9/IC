@@ -5,6 +5,6 @@
 ## Project 2
 
 
-André Clérigo
-João Pedro Amaral
-Pedro Rocha
+André Clérigo </br>
+João Pedro Amaral </br>
+Pedro Rocha </br>
