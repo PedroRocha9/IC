@@ -43,7 +43,7 @@ To encode the file: <br>
 ```bash
 ./lossy_intra_encoder <input file> <output file> <block size> <quantization>
 ```
-To decode the file: <br>
+And then to decode the file: <br>
 ```bash
 ./lossy_intra_decoder <input file> <output file>
 ```
@@ -53,7 +53,7 @@ To encode the file: <br>
 ```bash
 ./lossy_inter_encoder <input file> <output file> <block size> <search area> <key-frame period> <quantization>
 ```
-To decode the file: <br>
+And then to decode the file: <br>
 ```bash
 ./lossy_inter_decoder <input file> <output file>
 ```
